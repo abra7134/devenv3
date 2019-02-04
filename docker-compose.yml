@@ -26,6 +26,28 @@ services:
     volumes_from:
       - nginx
 
+  php-fpm-71:
+    build:
+      context: php-fpm-71
+      args:
+        - USER_ID
+        - GROUP_ID
+    networks:
+      - main
+    volumes_from:
+      - nginx
+
+  php-fpm-72:
+    build:
+      context: php-fpm-72
+      args:
+        - USER_ID
+        - GROUP_ID
+    networks:
+      - main
+    volumes_from:
+      - nginx
+
 networks:
   main:
     driver: bridge
