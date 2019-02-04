@@ -9,7 +9,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /opt/www:/www
+      - ~/www:/www
       - /run/php
 
   php-fpm-56:
