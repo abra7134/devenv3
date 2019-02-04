@@ -1,0 +1,60 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+html { height: 100%; }
+body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #ff7100;
+  color: white;
+  text-align: center;
+  font-family: arial, sans-serif;
+  background: url("/error-page/herman-fly.png") bottom center no-repeat #ff7100;
+}
+a { color:white; }
+
+.header {
+  padding: 40px;
+  padding-top: 100px;
+}
+.header h1 {
+  font-size: 60pt;
+  margin-bottom: 0;
+  color: white;
+  letter-spacing: -2px;
+  font-weight: bold;
+}
+.header p { font-size: 200%; }
+.header p.small { font-size: 130%; }
+.header h1, .header p {
+  margin: 15px auto;
+}
+
+@media (max-width: 700px) {
+  .header {
+    padding-top: 30px;
+  }
+}
+
+@media (max-height: 900px) {
+  body {
+    background-size: auto 40%;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    padding-bottom: 300px;
+    background-size: 300px auto;
+  }
+}
+
+@media (max-height: 500px) {
+  body {
+    background-image: none;
+  }
+}

@@ -1,0 +1,139 @@
+server {
+  listen 80 default_server;
+  server_name _;
+
+  location / {
+    empty_gif;
+  }
+}
+
+server {
+  listen 80;
+  server_name localhost;
+  include snippets/http_check_user_agent.conf;
+
+  location / {
+    rewrite ^/(.*)$ /error-page/$1;
+  }
+
+  location /error-page {
+    ssi on;
+    set $err_response "Вы попали на сервер среды разработчика<br>Для доступа к своим проектам нужно указать адрес:<br>http://название_проекта.$host";
+    root /var/www;
+    try_files $uri /error-page/index.html;
+  }
+
+  location = /robots.txt {
+    root /var/www/html;
+  }
+}
+
+server {
+  listen 80;
+  server_name ~((?<project>[[:alnum:]-_]+)\.)?(?<site>localhost)$;
+  include snippets/http_check_user_agent.conf;
+
+  client_max_body_size 32m;
+
+  error_page 403 /error-page/index.html;
+  error_page 404 /error-page/index.html;
+  error_page 502 /error-page/index.html;
+
+  if ( $uri ~ '^/(robots\.txt$|error-page/)' ) {
+    break;
+  }
+
+  if ( $project = "" ) {
+    set $project "default";
+  }
+
+  if ( !-d /www/$project ) {
+    set $project_exists "no";
+  }
+
+  if ( !-d /www/catchall ) {
+    set $project_exists "${project_exists}:no";
+  }
+
+  if ( $project_exists = "no:no" ) {
+    set $err_response "Не существует папки проекта ../www/$project<br>Создайте папку и запишите внутрь проект, либо";
+    return 404;
+  }
+
+  if ( $project_exists = "no" ) {
+    set $project "catchall";
+  }
+  set $project_exists yes;
+
+  if ( -f /www/$project/.profile_xdebug ) {
+    set $php_xdebug "-xdebug";
+  }
+  set $php_sock "unix:/run/php/php5.6-fpm-www$php_xdebug.sock";
+
+  if ( -f /www/$project/.profile_php7.1 ) {
+    set $php_sock "unix:/run/php/php7.1-fpm-www$php_xdebug.sock";
+  }
+
+  if ( -f /www/$project/.profile_php7.2 ) {
+    set $php_sock "unix:/run/php/php7.2-fpm-www$php_xdebug.sock";
+  }
+  set $root /www/$project;
+
+  if ( -d /www/$project/web ) {
+    set $root /www/$project/web;
+  }
+
+  if ( -d /www/$project/api/web ) {
+    set $root /www/$project/api/web;
+  }
+
+  if ( -d /www/$project/public ) {
+    set $root /www/$project/public;
+  }
+
+  location /error-page {
+    ssi on;
+    root /var/www;
+    try_files $uri /error-page/index.html;
+  }
+
+  location = /robots.txt {
+    root /var/www/html;
+  }
+
+  location / {
+    index index.htm index.html index.php;
+    root $root;
+    try_files $uri $uri/ /index.php$is_args$args;
+    set $err_response "Не найден индексный файл index.{htm,html,php} в $document_root/";
+
+    location ~ ^(.+\.php)(/.*)?$ {
+      set $err_response "Запрос превысил таймаут (>10 секунд) или PHP-обработчик недоступен,<br>попробуйте через несколько секунд";
+
+      if ( !-f $document_root$fastcgi_script_name ) {
+        set $err_response "Указанного URI не существует,<br>файл $fastcgi_script_name не найден в $document_root/";
+        return 404;
+      }
+      fastcgi_split_path_info ^(.+\.php)(/.*)$;
+      fastcgi_read_timeout 120s;
+      include fastcgi_params;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      fastcgi_param PATH_INFO $fastcgi_path_info;
+      fastcgi_param SERVER_NAME $host;
+      fastcgi_pass $php_sock;
+    }
+
+    location = /status_nginx {
+      stub_status;
+    }
+
+    location = /status_php {
+      include fastcgi_params;
+      fastcgi_param SCRIPT_FILENAME /status;
+      fastcgi_param SCRIPT_NAME /status;
+      fastcgi_pass $php_sock;
+    }
+
+    default_type text/plain;
+  }
+}

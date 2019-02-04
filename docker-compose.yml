@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  nginx:
+    build:
+      context: nginx
+    networks:
+      - main
+    ports:
+      - "80:80"
+    volumes:
+      - /opt/www:/www
+      - /run/php
+
+  php-fpm-56:
+    build:
+      context: php-fpm-56
+    networks:
+      - main
+    volumes_from:
+      - nginx
+
+networks:
+  main:
+    driver: bridge
