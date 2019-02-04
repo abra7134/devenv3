@@ -50,6 +50,33 @@ RUN \
     php-xdebug \
     ;
 
+ARG USER_ID=0
+ARG GROUP_ID=0
+
+RUN \
+  set -eux \
+    ;\
+  if [ -n "${USER_ID}" -a "${USER_ID}" -gt 0 ]; \
+  then \
+    groupmod \
+      --gid ${GROUP_ID} \
+      www-data \
+      ;\
+    usermod \
+      --uid ${USER_ID} \
+      www-data \
+      ;\
+    mkdir --parents \
+      ~www-data/ \
+      ;\
+    chown --changes \
+      --recursive \
+      www-data:www-data \
+      ~www-data/ \
+      ;\
+  fi \
+    ;
+
 COPY configs/ /
 
 VOLUME ["/run/php"]

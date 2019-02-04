@@ -4,6 +4,9 @@ services:
   nginx:
     build:
       context: nginx
+      args:
+        - USER_ID
+        - GROUP_ID
     networks:
       - main
     ports:
@@ -15,6 +18,9 @@ services:
   php-fpm-56:
     build:
       context: php-fpm-56
+      args:
+        - USER_ID
+        - GROUP_ID
     networks:
       - main
     volumes_from:
