@@ -4,6 +4,7 @@
 
 ### v0.2 ()
 
+- **nginx**: Добавлен аргумент `NGINX_VERSION` в `Dockerfile`
 - Добавлен `CHANGELOG.md`
 
 ### v0.1 (2019/02/05)

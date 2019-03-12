@@ -27,6 +27,8 @@ RUN \
   apt-get -y update \
     ;
 
+ARG NGINX_VERSION="1.12.2-1~dotdeb+8.1"
+
 RUN \
   set -eux \
     ;\
@@ -34,7 +36,7 @@ RUN \
     ;\
   { \
     echo "Package: nginx-*"; \
-    echo "Pin: version 1.12.2-1~dotdeb+8.1"; \
+    echo "Pin: version ${NGINX_VERSION}"; \
     echo "Pin-Priority: 1001"; \
   } > /etc/apt/preferences.d/00nginx \
     ;\
