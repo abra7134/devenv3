@@ -4,6 +4,7 @@
 
 ### v0.2 ()
 
+- `Makefile` заменен на BASH-скрипт `devenv3.bash` с улучшенной архитектурой
 - **nginx**: Добавлен аргумент `NGINX_VERSION` в `Dockerfile`
 - Добавлен `CHANGELOG.md`
 
