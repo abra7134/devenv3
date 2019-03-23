@@ -71,6 +71,6 @@ RUN \
   fi \
     ;
 
-COPY configs/ /
+COPY root/ /
 
 ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off; master_process on;"]

@@ -89,7 +89,7 @@ RUN \
   fi \
     ;
 
-COPY configs/ /
+COPY root/ /
 
 VOLUME ["/run/php"]
 
