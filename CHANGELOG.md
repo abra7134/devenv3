@@ -4,6 +4,7 @@
 
 ### v0.2 ()
 
+- **php-fpm-***: Добавлены пакеты `git`, `libdbi-perl`, `libdbd-mysql-perl`, `mysql-client-5.5` для работы миграций
 - `Makefile` заменен на BASH-скрипт `devenv3.bash` с улучшенной архитектурой
 - **nginx**: Добавлен аргумент `NGINX_VERSION` в `Dockerfile`
 - Добавлен `CHANGELOG.md`

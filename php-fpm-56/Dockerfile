@@ -50,6 +50,18 @@ RUN \
     php-xdebug \
     ;
 
+RUN \
+  set -eux \
+    ;\
+  export DEBIAN_FRONTEND=noninteractive \
+    ;\
+  apt-get -y install \
+    git \
+    libdbi-perl \
+    libdbd-mysql-perl \
+    mysql-client-5.5 \
+    ;
+
 ARG USER_ID=0
 ARG GROUP_ID=0
 
