@@ -31,7 +31,7 @@ function _print {
         printf "[*] ${progress_message} ...\n"
       done
       ;;
-    "warning" | "error" )
+    * )
       {
         local ident="!!! ${print_type^^}:"
         local ident_length="${#ident}"
@@ -61,6 +61,13 @@ function info {
   _print info "${@}"
 }
 
+function internal {
+  _print internal \
+    "Problem in '${FUNCNAME[2]}' -> '${FUNCNAME[1]}' function call at ${BASH_LINENO[1]} line:" \
+    "${@}"
+  exit 2
+}
+
 function progress {
   _print progress "${@}"
 }
@@ -68,6 +75,34 @@ function progress {
 function warning {
   _print warning "${@}"
   exit 0
+}
+
+function run {
+  local command="${1}"
+
+  if [ -z "${command}" ]; then
+    internal "Function parameters needs to be specified"
+  fi
+
+  command_type="$(type -t "${command}")"
+  if [ "${command_type}" = "file" ]; then
+    shift
+    "${command}" "${@}" \
+      || error "Failed of '${command}' command running" \
+               "Please check and try again, or address the administrator"
+  elif [ -z "${command_type}" ]; then
+    error \
+      "The command '${command}' must be exists at your system" \
+      "Please install it from the package manager of your OS"
+  else
+    internal "The specified command '${command}' needs to be 'file' type, not '${command_type}'"
+  fi
+}
+
+function run_inside_de3 {
+  pushd "${DEVENV3_HOME_DIR}" >/dev/null
+  run "${@}"
+  popd >/dev/null
 }
 
 function main_footer {
@@ -93,13 +128,7 @@ function command_build {
     "It can take some time"
 
   progress "Starting 'docker-compose build' command"
-  pushd "${DEVENV3_HOME_DIR}" \
-    >/dev/null
-  docker-compose build \
-    || error "Failed of 'docker-compose build' command running" \
-             "Please check and try again"
-  popd \
-    >/dev/null
+  run_inside_de3 docker-compose build
   progress "Done"
 }
 
@@ -138,10 +167,8 @@ function command_init {
   local devenv3_env_filepath="${DEVENV3_HOME_DIR}/.env"
 
   progress "Creating Applications directory"
-  mkdir --parents \
-    "${DEVENV3_APP_DIR}" \
-    || error "Failed of 'mkdir' command running" \
-             "Please check and try again"
+  run mkdir --parents \
+    "${DEVENV3_APP_DIR}"
 
   progress "Writing ${devenv3_env_filepath} file"
   {
@@ -150,11 +177,9 @@ function command_init {
   } > "${devenv3_env_filepath}"
 
   progress "Appending DevEnv3 aliases to ${BASHRC_PATH}"
-  sed --in-place \
+  run sed --in-place \
     "/${begin_string}/,/${end_string}/d" \
-    "${BASHRC_PATH}" \
-    || error "Failed of 'sed' command running" \
-             "Please check and try again"
+    "${BASHRC_PATH}"
   {
     echo "${begin_string}"
     for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
@@ -184,13 +209,7 @@ function command_up {
     "http://<project_name>.localhost"
 
   progress "Starting 'docker-compose up' command"
-  pushd "${DEVENV3_HOME_DIR}" \
-    >/dev/null
-  docker-compose up \
-    || error "Failed of 'docker-compose up' command running" \
-             "Please check and try again"
-  popd \
-    >/dev/null
+  run_inside_de3 docker-compose up
   progress "Done"
 }
 
