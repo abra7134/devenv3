@@ -3,11 +3,12 @@
 DEVENV3_VERSION="0.1"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
-DEVENV3_ALIASES=("de3" "denv3" "devenv3")
-
 DEVENV3_APP_DIR="${HOME}/www"
 DEVENV3_HOME_DIR=$(dirname $(realpath "${0}"))
 DEVENV3_FILENAME=$(basename "${0}")
+
+DEVENV3_ALIASES=("de3" "denv3" "devenv3")
+DEVENV3_ALIAS="${_devenv3_alias:-${DEVENV3_FILENAME}}"
 
 BASHRC_PATH="${HOME}/.bashrc"
 
@@ -151,7 +152,7 @@ function command_help {
     fi
   done
   echo
-  echo "Run '${_devenv3_alias:-${DEVENV3_FILENAME}} COMMAND --help' for more information on a command."
+  echo "Run '${DEVENV3_ALIAS} COMMAND --help' for more information on a command."
   echo
   exit 0
 }
