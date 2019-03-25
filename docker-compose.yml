@@ -1,6 +1,12 @@
 version: '2'
 
 services:
+  composer:
+    build:
+      context: composer
+    volumes:
+      - /usr/local/bin
+
   nginx:
     build:
       context: nginx
@@ -24,6 +30,7 @@ services:
     networks:
       - main
     volumes_from:
+      - composer
       - nginx
 
   php-fpm-71:
@@ -35,6 +42,7 @@ services:
     networks:
       - main
     volumes_from:
+      - composer
       - nginx
 
   php-fpm-72:
@@ -46,6 +54,7 @@ services:
     networks:
       - main
     volumes_from:
+      - composer
       - nginx
 
 networks:
