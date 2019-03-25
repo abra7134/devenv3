@@ -18,7 +18,7 @@ server {
 
   location /error-page {
     ssi on;
-    set $err_response "Вы попали на сервер среды разработчика<br>Для доступа к своим проектам нужно указать адрес:<br>http://название_проекта.$host";
+    set $err_response "Вы попали в Окружение Разработки v3<br>Для доступа к своим проектам нужно указать адрес:<br>http://название_проекта.$host";
     root /var/www;
     try_files $uri /error-page/index.html;
   }
