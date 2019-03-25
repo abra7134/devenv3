@@ -10,7 +10,7 @@
 ###### Остальные изменения:
 - В отдельный контейнер добавлен `composer` последней версии
 - Директории `configs` с конфигурацией для `Docker`-образов переименованы в `root`
-- **php-fpm-***: Добавлены пакеты `git`, `libdbi-perl`, `libdbd-mysql-perl`, `mysql-client-5.5` для работы миграций
+- **php-fpm-***: Добавлены пакеты `git`, `libdbi-perl`, `libdbd-mysql-perl`, `mysql-client-5.5`, `unzip` для работы миграций
 - **nginx**: Добавлен аргумент `NGINX_VERSION` в `Dockerfile`
 - Добавлен `CHANGELOG.md`
 

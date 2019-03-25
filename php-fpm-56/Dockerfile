@@ -60,6 +60,7 @@ RUN \
     libdbi-perl \
     libdbd-mysql-perl \
     mysql-client-5.5 \
+    unzip \
     ;
 
 ARG USER_ID=0
