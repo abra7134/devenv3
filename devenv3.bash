@@ -134,6 +134,17 @@ function command_build {
   progress "Done"
 }
 
+function command_down {
+  if [[ "${1}" == "description" ]]; then
+    echo "Destroy containers and other Docker things of the DevEnv3 (situable for a upgrading)"
+    return 0
+  fi
+
+  progress "Starting 'docker-compose down' command"
+  run_inside_de3 \
+    docker-compose down
+  progress "Done"
+}
 
 function command_help {
   if [[ "${1}" == "description" ]]; then
