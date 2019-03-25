@@ -16,7 +16,7 @@ function _print {
   local print_type="${1}"
   shift
 
-  if [ -z "${1}" ]; then
+  if [[ -z "${1}" ]]; then
     return 0
   fi
 
@@ -81,17 +81,17 @@ function warning {
 function run {
   local command="${1}"
 
-  if [ -z "${command}" ]; then
+  if [[ -z "${command}" ]]; then
     internal "Function parameters needs to be specified"
   fi
 
   command_type="$(type -t "${command}")"
-  if [ "${command_type}" = "file" ]; then
+  if [[ "${command_type}" == "file" ]]; then
     shift
     "${command}" "${@}" \
       || error "Failed of '${command}' command running" \
                "Please check and try again, or address the administrator"
-  elif [ -z "${command_type}" ]; then
+  elif [[ -z "${command_type}" ]]; then
     error \
       "The command '${command}' must be exists at your system" \
       "Please install it from the package manager of your OS"
@@ -120,7 +120,7 @@ END_INFO
 
 function command_build {
   if [[ "${1}" == "description" ]]; then
-    echo "Build Docker images for a running of the environment"
+    echo "Build Docker images for the DevEnv3 running"
     return 0
   fi
 
@@ -129,7 +129,8 @@ function command_build {
     "It can take some time"
 
   progress "Starting 'docker-compose build' command"
-  run_inside_de3 docker-compose build
+  run_inside_de3 \
+    docker-compose build
   progress "Done"
 }
 
@@ -197,7 +198,7 @@ function command_init {
 
 function command_up {
   if [[ "${1}" == "description" ]]; then
-    echo "Run the environment"
+    echo "Run the DevEnv3"
     return 0
   fi
 
@@ -210,7 +211,8 @@ function command_up {
     "http://<project_name>.localhost"
 
   progress "Starting 'docker-compose up' command"
-  run_inside_de3 docker-compose up
+  run_inside_de3 \
+    docker-compose up
   progress "Done"
 }
 
