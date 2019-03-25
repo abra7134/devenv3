@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEVENV3_VERSION="0.1"
+DEVENV3_VERSION="0.2beta"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
 DEVENV3_APP_DIR="${HOME}/www"
@@ -45,12 +45,6 @@ function _print {
       } >&2
       ;;
   esac
-}
-
-function _check_root {
-  if [[ "${PWD#${DEVENV3_APP_DIR}}" == "${PWD}" ]]; then
-    error "The '${devenv3_command}' command must be runned above Applications directory!"
-  fi
 }
 
 function error {
@@ -207,6 +201,51 @@ function command_init {
           "Please run another copy of terminal OR run this command: source ${BASHRC_PATH}"
 }
 
+function command_run {
+  if [[ "${1}" == "description" ]]; then
+    echo "Run any command inside the DevEnv3 (for example: composer, php and etc)"
+    return 0
+  fi
+
+  local command="${1}"
+  if [[ -z "${command}" || "${command}" == "--help" ]]; then
+    warning \
+      "Please specify a running command" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <command>"
+  fi
+
+  shift
+  local pwd_rel_dir="${PWD#${DEVENV3_APP_DIR}/}"
+  if [[ "${PWD}" == "${pwd_rel_dir}" ]]; then
+    error "The '${DEVENV3_ALIAS} ${command_name}' command must be runned inside any Project directory!"
+  fi
+
+  local project_name="${pwd_rel_dir%%/*}"
+  local php_version="56"
+  if [[ -f "${DEVENV3_APP_DIR}/${project_name}/.profile_php7.1" ]]; then
+    php_version="71"
+  elif [[ -f "${DEVENV3_APP_DIR}/${project_name}/.profile_php7.2" ]]; then
+    php_version="72"
+  fi
+
+  local container_name="php-fpm-${php_version}"
+  progress "Checking of existing the '${container_name}' container"
+  if [[ -z $(run_inside_de3 docker-compose ps --quiet "${container_name}") ]]; then
+    error \
+      "The necessary container have not 'running' state" \
+      "Please run the DevEnv3 by '${DEVENV3_ALIAS} up' command"
+  fi
+
+  progress "Run a '${command}' command at project '${project_name}' using '${container_name}' container"
+  # Hack with WORKDIR is using because: Setting workdir for exec is not supported in API < 1.35 (1.22)
+  run_inside_de3 \
+    docker-compose \
+      exec \
+        --user www-data \
+        "${container_name}" \
+        /bin/sh -c "cd /www/${pwd_rel_dir}; ${command} ${@}"
+}
+
 function command_up {
   if [[ "${1}" == "description" ]]; then
     echo "Run the DevEnv3"
@@ -234,4 +273,5 @@ if ! declare -F "command_${command_name}" >/dev/null; then
   command_name="help"
 fi
 
-command_${command_name}
+shift
+command_${command_name} "${@}"
