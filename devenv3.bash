@@ -242,13 +242,19 @@ function command_run {
   fi
 
   progress "Run a '${command}' command at project '${project_name}' using '${container_name}' container"
-  # Hack with WORKDIR is using because: Setting workdir for exec is not supported in API < 1.35 (1.22)
+  # Use exec direct from docker to avoid a problem with BASH "${@}" expansion
+  # Because with docker-compose command it is necessary to use next command:
+  # /bin/sh -c "cd /www/${pwd_rel_dir}; ${command} ${@}"
+  # 1. Hack with WORKDIR is using because Setting workdir for exec is not supported in API < 1.35 (1.22)
+  # 2. This form of ${@} expanded only one parameter :(
   run_inside_de3 \
-    docker-compose \
-      exec \
-        --user www-data \
-        "${container_name}" \
-        /bin/sh -c "cd /www/${pwd_rel_dir}; ${command} ${@}"
+    docker exec \
+      --interactive \
+      --tty \
+      --user www-data \
+      --workdir "/www/${pwd_rel_dir}" \
+      "${container_id}" \
+      "${command}" "${@}"
 }
 
 function command_up {
