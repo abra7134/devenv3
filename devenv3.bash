@@ -230,7 +230,12 @@ function command_run {
 
   local container_name="php-fpm-${php_version}"
   progress "Checking of existing the '${container_name}' container"
-  if [[ -z $(run_inside_de3 docker-compose ps --quiet "${container_name}") ]]; then
+  # The docker-compose v1.12.0 '-q' flag have only
+  local container_id="$(run_inside_de3 docker-compose ps -q "${container_name}")"
+  if [[    -z "${container_id}" \
+        || -z "$(run docker ps --quiet \
+                               --filter "status=running" \
+                               --filter "id=${container_id}")" ]]; then
     error \
       "The necessary container have not 'running' state" \
       "Please run the DevEnv3 by '${DEVENV3_ALIAS} up' command"
