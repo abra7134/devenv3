@@ -18,8 +18,9 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ~/www:/www
+      - /dev/log:/dev/log
       - /run/php
+      - ~/www:/www
 
   php-fpm-56:
     build:
