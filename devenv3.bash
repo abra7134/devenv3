@@ -256,7 +256,7 @@ function command_run {
   if [[ -z "${command}" || "${command}" == "--help" ]]; then
     warning \
       "Please specify a running command" \
-      "Usage: ${DEVENV3_ALIAS} ${command_name} <command>"
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <command> [parameters]"
   fi
 
   shift
@@ -265,12 +265,42 @@ function command_run {
     error "The '${DEVENV3_ALIAS} ${command_name}' command must be runned inside any Project directory!"
   fi
 
-  local project_name="${pwd_rel_dir%%/*}"
+  command_run_at "${pwd_rel_dir}" "${command}" "${@}"
+}
+
+function command_run_at {
+  if [[ "${1}" == "description" ]]; then
+    echo "Run any command at selected project inside the DevEnv3 (for example: composer, php and etc)"
+    return 0
+  fi
+
+  local project_path="${1}"
+  if [[ -z "${project_path}" ]]; then
+    warning \
+      "Please specify a project where the command will run" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <project_name> <command> [parameters]"
+  fi
+
+  shift
+  local command="${1}"
+  if [[ -z "${command}" || "${command}" == "--help" ]]; then
+    warning \
+      "Please specify a running command" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <project_name> <command> [parameters]"
+  fi
+
+  shift
+  local project_name="${project_path%%/*}"
+  local project_dir="${DEVENV3_APP_DIR}/${project_name}"
+  if [[ ! -d "${project_dir}" ]]; then
+    error "The specified '${project_name}' project is not exists, please check and try again"
+  fi
+
   local php_version="56"
-  if [[ -f "${DEVENV3_APP_DIR}/${project_name}/.profile_php7.1" ]]; then
-    php_version="71"
-  elif [[ -f "${DEVENV3_APP_DIR}/${project_name}/.profile_php7.2" ]]; then
+  if [[ -f "${project_dir}/.profile_php7.2" ]]; then
     php_version="72"
+  elif [[ -f "${project_dir}/.profile_php7.1" ]]; then
+    php_version="71"
   fi
 
   local container_name="php-fpm-${php_version}"
@@ -297,7 +327,7 @@ function command_run {
       --interactive \
       --tty \
       --user www-data \
-      --workdir "/www/${pwd_rel_dir}" \
+      --workdir "/www/${project_path}" \
       "${container_id}" \
       "${command}" "${@}"
 }
