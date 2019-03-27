@@ -208,7 +208,7 @@ function command_ls {
     return 0
   fi
 
-  local app_{branch,dir,index_file,lang,name,realdir,url}
+  local app_{branch,dir,index_file,home,lang,name,url}
   local index_{dir,file}
 
   printf "%-23s %-33s %-20s %-20s %-4s %-10s\n" \
@@ -234,7 +234,7 @@ function command_ls {
         ;;
     esac
 
-    app_realdir=$(
+    app_home=$(
       run realpath \
         --relative-base="${DEVENV3_APP_DIR}" \
         "${app_dir}"
@@ -245,16 +245,16 @@ function command_ls {
     app_php="-"
 
     # Don't process application if realdir begin with / that is OUTSIDE applications directory
-    if [[ "${app_realdir::1}" == "/" ]]; then
-      app_realdir="(OUTSIDE)"
+    if [[ "${app_home::1}" == "/" ]]; then
+      app_home="(OUTSIDE)"
     # And also if resolved directory is not exists
-    elif [[ ! -d "${app_realdir}" ]]; then
-      app_realdir="(MISSING)"
+    elif [[ ! -d "${DEVENV3_APP_DIR}/${app_home}" ]]; then
+      app_home="(MISSING)"
     else
       # Overwrite a app_dir with real directory
-      app_dir="${DEVENV3_APP_DIR}/${app_realdir}"
+      app_dir="${DEVENV3_APP_DIR}/${app_home}"
       # For a pretty printing
-      app_realdir+="/"
+      app_home+="/"
 
       app_php="5.6"
       if [[ -f "${app_dir}/.profile_php7.2" ]]; then
@@ -293,7 +293,7 @@ function command_ls {
     printf "%-20s -> %-30s -> %-20s %-20s %-4s %-20s\n" \
       "${app_name}" \
       "${app_url}" \
-      "${app_realdir}" \
+      "${app_home}" \
       "${app_index_file}" \
       "${app_php}" \
       "${app_branch}"
