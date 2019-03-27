@@ -31,7 +31,7 @@ $ git clone https://github.com/abra7134/devenv3 ~/devenv3
 - _build_ - сборка необходимых Docker-образов
 - _down_ - удаление контейнеров Окружения Разработки (необходимо при обновлениях)
 - _help_ - помощник по использованию скрипта
-- _ls_ - вывод списка всех приложений с указанием используемой версии PHP-интерпритатора и выбранного индексного файла
+- _ls_ - вывод списка всех приложений с указанием используемой версии PHP-интерпретатора и выбранного индексного файла
 - _init_ - инициализация Окружения Разработки
 - _run_ - запуск команды внутри Окружения Разработки (например: composer, php yii, php artisan и т.д.)
 - _run_at_ - запуск команды в указанном приложении внутри Окружения Разработки (удобно для документации)
@@ -152,10 +152,20 @@ $ touch .profile_php7.1
 #### Вывод списка всех PHP-приложений
 
 С помощью команды **ls** можно посмотреть список всех установленных PHP-приложений, а также получить дополнительную
-информацию о версии используемого PHP-интерпритатора, а также выбранного индексного файла.
+информацию о версии `PHP`-интерпретатора, выбранном индексном файле, а также наименовании текущей `Mercurial`-ветки.
 
 ```sh
 $ de3 ls
+...
+NAME                    URL                               HOME                 INDEX FILE           PHP  BRANCH
+admin                -> http://admin.localhost/        -> site/backend/        web/index.php        7.2  default
+catchall             -> http://*.localhost/            -> site/frontend/       web/index.php        7.2  default
+default              -> http://localhost/              -> site/landing/        web/index.php        5.6  default
+test                 -> http://test.localhost/         -> test/                api/web/index.php    7.1  release-1.57
+test2                -> http://test2.localhost/        -> test/                api/web/index.php    7.1  release-1.57
+test3                -> http://test3.localhost/        -> (OUTSIDE)            -                    -       -
+test4                -> http://test4.localhost/        -> (MISSING)            -                    -       -
+site                 -> http://site.localhost/         -> site/                (NOT FOUND)          5.6  default
 ```
 
 #### Доступ к консоли

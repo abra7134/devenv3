@@ -4,6 +4,7 @@ DEVENV3_VERSION="0.2beta"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
 DEVENV3_APP_DIR="${HOME}/www"
+DEVENV3_APP_DOMAIN="localhost"
 DEVENV3_HOME_DIR=$(dirname $(realpath "${0}"))
 DEVENV3_FILENAME=$(basename "${0}")
 
@@ -203,46 +204,99 @@ function command_init {
 
 function command_ls {
   if [[ "${1}" == "description" ]]; then
-    echo "List all projects in Applications directory"
+    echo "List all installed applications"
     return 0
   fi
 
-  local project_{name,path,php,index}
-  local index_{dir,file,php}
+  local app_{branch,dir,index_file,lang,name,realdir,url}
+  local index_{dir,file}
 
-  printf "%-30s %3s %30s\n" "PROJECT NAME" "PHP" "SELECTED INDEX FILE"
-  for project_path in "${DEVENV3_APP_DIR}/"*; do
-    if [[ ! -d "${project_path}" ]]; then
+  printf "%-23s %-33s %-20s %-20s %-4s %-10s\n" \
+    "NAME" "URL" "HOME" "INDEX FILE" "PHP" "BRANCH"
+
+  for app_dir in "${DEVENV3_APP_DIR}/"*; do
+    if [[    ! -d "${app_dir}" \
+          && ! -h "${app_dir}" ]]; then
       continue
     fi
 
-    project_name="${project_path##*/}"
+    app_name="${app_dir##*/}"
 
-    project_php="5.6"
-    for index_php in "7.1" "7.2"; do
-      if [[ -f "${project_path}/.profile_php${index_php}" ]]; then
-        project_php="${index_php}"
+    case "${app_name}" in
+      "catchall" )
+        app_url="http://*.${DEVENV3_APP_DOMAIN}/"
+        ;;
+      "default" )
+        app_url="http://${DEVENV3_APP_DOMAIN}/"
+        ;;
+      * )
+        app_url="http://${app_name}.${DEVENV3_APP_DOMAIN}/"
+        ;;
+    esac
+
+    app_realdir=$(
+      run realpath \
+        --relative-base="${DEVENV3_APP_DIR}" \
+        "${app_dir}"
+    )
+
+    app_branch="-"
+    app_index_file="-"
+    app_php="-"
+
+    # Don't process application if realdir begin with / that is OUTSIDE applications directory
+    if [[ "${app_realdir::1}" == "/" ]]; then
+      app_realdir="(OUTSIDE)"
+    # And also if resolved directory is not exists
+    elif [[ ! -d "${app_realdir}" ]]; then
+      app_realdir="(MISSING)"
+    else
+      # Overwrite a app_dir with real directory
+      app_dir="${DEVENV3_APP_DIR}/${app_realdir}"
+      # For a pretty printing
+      app_realdir+="/"
+
+      app_php="5.6"
+      if [[ -f "${app_dir}/.profile_php7.2" ]]; then
+        app_php="7.2"
+      elif [[ -f "${app_dir}/.profile_php7.1" ]]; then
+        app_php="7.1"
       fi
-    done
 
-    for index_dir in "" "web" "api/web" "public"; do
-      if [[ -d "${project_path}/${index_dir}" ]]; then
-        project_index="${index_dir}"
+      for index_dir in "public" "api/web" "web" ""; do
+        if [[ -d "${app_dir}/${index_dir}" ]]; then
+          break
+        fi
+      done
+      for index_file in "index.htm" "index.html" "index.php" ""; do
+        if [[ -f "${app_dir}/${index_dir}/${index_file}" ]]; then
+          break
+        fi
+      done
+      if [[ -z "${index_file}" ]]; then
+        app_index_file="(NOT FOUND)"
+      else
+        app_index_file="${index_dir}/${index_file}"
       fi
-    done
 
-    for index_file in "index.htm" "index.html" "index.php" ""; do
-      if [[ -f "${project_path}/${project_index}/${index_file}" ]]; then
-        project_index+="/${index_file}"
-        break
-      fi
-    done
-
-    if [[ -z "${index_file}" ]]; then
-      project_index="not found"
+      index_dir="${app_dir}"
+      # Walk to all upper directories when a searching of branch name like 'hg' command :)
+      while [[ "${index_dir}" != "${DEVENV3_APP_DIR}" ]]; do
+        if [[ -s "${index_dir}/.hg/branch" ]]; then
+          read app_branch <"${index_dir}/.hg/branch"
+          break
+        fi
+        index_dir="${index_dir%/*}"
+      done
     fi
 
-    printf "%-30s %3s %30s\n" "${project_name}/" "${project_php}" "${project_index}"
+    printf "%-20s -> %-30s -> %-20s %-20s %-4s %-20s\n" \
+      "${app_name}" \
+      "${app_url}" \
+      "${app_realdir}" \
+      "${app_index_file}" \
+      "${app_php}" \
+      "${app_branch}"
   done
 }
 
