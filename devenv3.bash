@@ -211,7 +211,7 @@ function command_ls {
   local app_{branch,dir,index_file,home,lang,name,url}
   local index_{dir,file}
 
-  printf "%-23s %-33s %-20s %-20s %-4s %-10s\n" \
+  printf "%-23s %-33s %-20s %-20s %-11s %-10s\n" \
     "NAME" "URL" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
@@ -262,6 +262,9 @@ function command_ls {
       elif [[ -f "${app_dir}/.profile_php7.1" ]]; then
         app_php="7.1"
       fi
+      if [[ -f "${app_dir}/.profile_xdebug" ]]; then
+        app_php+="+xdebug"
+      fi
 
       for index_dir in "public" "api/web" "web" ""; do
         if [[ -d "${app_dir}/${index_dir}" ]]; then
@@ -290,7 +293,7 @@ function command_ls {
       done
     fi
 
-    printf "%-20s -> %-30s -> %-20s %-20s %-4s %-20s\n" \
+    printf "%-20s -> %-30s -> %-20s %-20s %-11s %-20s\n" \
       "${app_name}" \
       "${app_url}" \
       "${app_home}" \

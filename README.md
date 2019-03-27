@@ -149,6 +149,20 @@ $ cd www/имя_проекта
 $ touch .profile_php7.1
 ```
 
+#### XDebug
+
+Для использования удаленной трассировки с помощью расширения **xdebug** необходимо в папку проекта записать пустой файл: `.profile_xdebug`
+
+Наличие этого файла даст указание веб-серверу использовать `php`-обработчик с параметрами: `xdebug.remote_enable=1`, `xdebug.remote_connect_back=1`, которые разрешают удаленную трассировку, а также увеличенным максимальным временем исполнения php скрипта *до 120 секунд* (в обычном режиме *только 10 секунд*).
+
+Если необходимо вместо *remote_connect_back* режима использовать *remote_autostart*, то можно воспользоваться переопределением в `.user.ini` файле, который необходимо создать в папке с индексным файлом (например: `web/`, `api/web/`, `public/`) со следующим содержимым:
+```
+xdebug.remote_connect_back=0
+xdebug.remote_autostart=1
+xdebug.remote_host=адрес_хоста_с_xdebug_отладчиком
+xdebug.remote_port=порт_xdebug_отладчика
+```
+
 #### Вывод списка всех PHP-приложений
 
 С помощью команды **ls** можно посмотреть список всех установленных PHP-приложений, а также получить дополнительную
@@ -157,15 +171,15 @@ $ touch .profile_php7.1
 ```sh
 $ de3 ls
 ...
-NAME                    URL                               HOME                 INDEX FILE           PHP  BRANCH
-admin                -> http://admin.localhost/        -> site/backend/        web/index.php        7.2  default
-catchall             -> http://*.localhost/            -> site/frontend/       web/index.php        7.2  default
-default              -> http://localhost/              -> site/landing/        web/index.php        5.6  default
-test                 -> http://test.localhost/         -> test/                api/web/index.php    7.1  release-1.57
-test2                -> http://test2.localhost/        -> test/                api/web/index.php    7.1  release-1.57
-test3                -> http://test3.localhost/        -> (OUTSIDE)            -                    -       -
-test4                -> http://test4.localhost/        -> (MISSING)            -                    -       -
-site                 -> http://site.localhost/         -> site/                (NOT FOUND)          5.6  default
+NAME                    URL                               HOME                 INDEX FILE           PHP         BRANCH
+admin                -> http://admin.localhost/        -> site/backend/        web/index.php        7.2         default
+catchall             -> http://*.localhost/            -> site/frontend/       web/index.php        7.2+xdebug  default
+default              -> http://localhost/              -> site/landing/        web/index.php        5.6         default
+test                 -> http://test.localhost/         -> test/                api/web/index.php    7.1         release-1.57
+test2                -> http://test2.localhost/        -> test/                api/web/index.php    7.1         release-1.57
+test3                -> http://test3.localhost/        -> (OUTSIDE)            -                    -           -
+test4                -> http://test4.localhost/        -> (MISSING)            -                    -           -
+site                 -> http://site.localhost/         -> site/                (NOT FOUND)          5.6         default
 ```
 
 #### Доступ к консоли
@@ -189,20 +203,6 @@ $ de3 run composer
 ```sh
 $ de3 run_at имя_проекта php yii
 $ de3 run_at имя_проекта composer
-```
-
-#### XDebug
-
-Для использования удаленной трассировки с помощью расширения **xdebug** необходимо в папку проекта записать пустой файл: `.profile_xdebug`
-
-Наличие этого файла даст указание веб-серверу использовать `php`-обработчик с параметрами: `xdebug.remote_enable=1`, `xdebug.remote_connect_back=1`, которые разрешают удаленную трассировку, а также увеличенным максимальным временем исполнения php скрипта *до 120 секунд* (в обычном режиме *только 10 секунд*).
-
-Если необходимо вместо *remote_connect_back* режима использовать *remote_autostart*, то можно воспользоваться переопределением в `.user.ini` файле, который необходимо создать в папке с индексным файлом (например: `web/`, `api/web/`, `public/`) со следующим содержимым:
-```
-xdebug.remote_connect_back=0
-xdebug.remote_autostart=1
-xdebug.remote_host=адрес_хоста_с_xdebug_отладчиком
-xdebug.remote_port=порт_xdebug_отладчика
 ```
 
 #### Syslog
