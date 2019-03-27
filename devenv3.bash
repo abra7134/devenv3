@@ -316,7 +316,7 @@ function command_run {
   shift
   local pwd_rel_dir="${PWD#${DEVENV3_APP_DIR}/}"
   if [[ "${PWD}" == "${pwd_rel_dir}" ]]; then
-    error "The '${DEVENV3_ALIAS} ${command_name}' command must be runned inside any Project directory!"
+    error "The '${DEVENV3_ALIAS} ${command_name}' command must be runned inside any application directory!"
   fi
 
   command_run_at "${pwd_rel_dir}" "${command}" "${@}"
@@ -324,15 +324,15 @@ function command_run {
 
 function command_run_at {
   if [[ "${1}" == "description" ]]; then
-    echo "Run any command at selected project inside the DevEnv3 (for example: composer, php and etc)"
+    echo "Run any command at selected application inside the DevEnv3 (for example: composer, php and etc)"
     return 0
   fi
 
-  local project_path="${1}"
-  if [[ -z "${project_path}" ]]; then
+  local app_path="${1}"
+  if [[ -z "${app_path}" ]]; then
     warning \
-      "Please specify a project where the command will run" \
-      "Usage: ${DEVENV3_ALIAS} ${command_name} <project_name> <command> [parameters]"
+      "Please specify an application where the command will run" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
   fi
 
   shift
@@ -340,20 +340,20 @@ function command_run_at {
   if [[ -z "${command}" || "${command}" == "--help" ]]; then
     warning \
       "Please specify a running command" \
-      "Usage: ${DEVENV3_ALIAS} ${command_name} <project_name> <command> [parameters]"
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
   fi
 
   shift
-  local project_name="${project_path%%/*}"
-  local project_dir="${DEVENV3_APP_DIR}/${project_name}"
-  if [[ ! -d "${project_dir}" ]]; then
-    error "The specified '${project_name}' project is not exists, please check and try again"
+  local app_name="${app_path%%/*}"
+  local app_dir="${DEVENV3_APP_DIR}/${app_name}"
+  if [[ ! -d "${app_dir}" ]]; then
+    error "The specified '${app_name}' application is not exists, please check and try again"
   fi
 
   local php_version="56"
-  if [[ -f "${project_dir}/.profile_php7.2" ]]; then
+  if [[ -f "${app_dir}/.profile_php7.2" ]]; then
     php_version="72"
-  elif [[ -f "${project_dir}/.profile_php7.1" ]]; then
+  elif [[ -f "${app_dir}/.profile_php7.1" ]]; then
     php_version="71"
   fi
 
@@ -370,7 +370,7 @@ function command_run_at {
       "Please run the DevEnv3 by '${DEVENV3_ALIAS} up' command"
   fi
 
-  progress "Run a '${command}' command at project '${project_name}' using '${container_name}' container"
+  progress "Run a '${command}' command at application '${app_name}' using '${container_name}' container"
   # Use exec direct from docker to avoid a problem with BASH "${@}" expansion
   # Because with docker-compose command it is necessary to use next command:
   # /bin/sh -c "cd /www/${pwd_rel_dir}; ${command} ${@}"
@@ -381,7 +381,7 @@ function command_run_at {
       --interactive \
       --tty \
       --user www-data \
-      --workdir "/www/${project_path}" \
+      --workdir "/www/${app_path}" \
       "${container_id}" \
       "${command}" "${@}"
 }
@@ -397,8 +397,8 @@ function command_up {
     "For stop it please press CTRL-C"
 
   info \
-    "For access to your projects please type in the browser:" \
-    "http://<project_name>.localhost"
+    "For access to your applications please type in the browser:" \
+    "http://<application_name>.localhost"
 
   progress "Starting 'docker-compose up' command"
   run_inside_de3 \
