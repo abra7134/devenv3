@@ -201,6 +201,51 @@ function command_init {
           "Please run another copy of terminal OR run this command: source ${BASHRC_PATH}"
 }
 
+function command_ls {
+  if [[ "${1}" == "description" ]]; then
+    echo "List all projects in Applications directory"
+    return 0
+  fi
+
+  local project_{name,path,php,index}
+  local index_{dir,file,php}
+
+  printf "%-30s %3s %30s\n" "PROJECT NAME" "PHP" "SELECTED INDEX FILE"
+  for project_path in "${DEVENV3_APP_DIR}/"*; do
+    if [[ ! -d "${project_path}" ]]; then
+      continue
+    fi
+
+    project_name="${project_path##*/}"
+
+    project_php="5.6"
+    for index_php in "7.1" "7.2"; do
+      if [[ -f "${project_path}/.profile_php${index_php}" ]]; then
+        project_php="${index_php}"
+      fi
+    done
+
+    for index_dir in "" "web" "api/web" "public"; do
+      if [[ -d "${project_path}/${index_dir}" ]]; then
+        project_index="${index_dir}"
+      fi
+    done
+
+    for index_file in "index.htm" "index.html" "index.php" ""; do
+      if [[ -f "${project_path}/${project_index}/${index_file}" ]]; then
+        project_index+="/${index_file}"
+        break
+      fi
+    done
+
+    if [[ -z "${index_file}" ]]; then
+      project_index="not found"
+    fi
+
+    printf "%-30s %3s %30s\n" "${project_name}/" "${project_php}" "${project_index}"
+  done
+}
+
 function command_run {
   if [[ "${1}" == "description" ]]; then
     echo "Run any command inside the DevEnv3 (for example: composer, php and etc)"
