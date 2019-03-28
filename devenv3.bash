@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEVENV3_VERSION="0.2beta"
+DEVENV3_VERSION="0.2"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
 DEVENV3_APP_DIR="${HOME}/www"
