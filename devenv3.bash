@@ -211,7 +211,8 @@ function command_ls {
   local app_{branch,dir,index_file,home,lang,name,url}
   local index_{dir,file}
 
-  printf "%-23s %-33s %-20s %-20s %-11s %-10s\n" \
+  local print_format="%-20s %-40s %-20s %-20s %-12s %-10s\n"
+  printf "${print_format}" \
     "NAME" "URL" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
@@ -293,7 +294,7 @@ function command_ls {
       done
     fi
 
-    printf "%-20s -> %-30s -> %-20s %-20s %-11s %-20s\n" \
+    printf "${print_format}" \
       "${app_name}" \
       "${app_url}" \
       "${app_home}" \
