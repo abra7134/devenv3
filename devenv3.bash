@@ -178,13 +178,13 @@ function command_init {
   run mkdir --parents \
     "${DEVENV3_APP_DIR}"
 
-  progress "Writing ${devenv3_env_filepath} file"
+  progress "Writing '${devenv3_env_filepath}' file"
   {
     echo "USER_ID=`id --user`"
     echo "GROUP_ID=`id --group`"
   } > "${devenv3_env_filepath}"
 
-  progress "Appending DevEnv3 aliases to ${BASHRC_PATH}"
+  progress "Appending DevEnv3 aliases to '${BASHRC_PATH}'"
   run sed --in-place \
     "/${begin_string}/,/${end_string}/d" \
     "${BASHRC_PATH}"
@@ -208,7 +208,7 @@ function command_ls {
     return 0
   fi
 
-  local app_{branch,dir,index_file,home,lang,name,url}
+  local app_{branch,dir,home,index_file,name,php_version,url}
   local index_{dir,file}
 
   local print_format="%-20s %-40s %-20s %-20s %-12s %-10s\n"
@@ -243,7 +243,7 @@ function command_ls {
 
     app_branch="-"
     app_index_file="-"
-    app_php="-"
+    app_php_version="-"
 
     # Don't process application if realdir begin with / that is OUTSIDE applications directory
     if [[ "${app_home::1}" == "/" ]]; then
@@ -257,14 +257,13 @@ function command_ls {
       # For a pretty printing
       app_home+="/"
 
-      app_php="5.6"
-      if [[ -f "${app_dir}/.profile_php7.2" ]]; then
-        app_php="7.2"
-      elif [[ -f "${app_dir}/.profile_php7.1" ]]; then
-        app_php="7.1"
-      fi
+      for app_php_version in "7.2" "7.1" "5.6"; do
+        if [[ -f "${app_dir}/.profile_php${app_php_version}" ]]; then
+          break
+        fi
+      done
       if [[ -f "${app_dir}/.profile_xdebug" ]]; then
-        app_php+="+xdebug"
+        app_php_version+="+xdebug"
       fi
 
       for index_dir in "public" "api/web" "web" ""; do
@@ -299,7 +298,7 @@ function command_ls {
       "${app_url}" \
       "${app_home}" \
       "${app_index_file}" \
-      "${app_php}" \
+      "${app_php_version}" \
       "${app_branch}"
   done
 }
@@ -335,15 +334,7 @@ function command_run_at {
   local app_path="${1}"
   if [[ -z "${app_path}" ]]; then
     warning \
-      "Please specify an application where the command will run" \
-      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
-  fi
-
-  shift
-  local command="${1}"
-  if [[ -z "${command}" || "${command}" == "--help" ]]; then
-    warning \
-      "Please specify a running command" \
+      "Please specify an application name where the command will run" \
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
   fi
 
@@ -351,17 +342,28 @@ function command_run_at {
   local app_name="${app_path%%/*}"
   local app_dir="${DEVENV3_APP_DIR}/${app_name}"
   if [[ ! -d "${app_dir}" ]]; then
-    error "The specified '${app_name}' application is not exists, please check and try again"
+    error \
+      "The specified '${app_name}' application is not exists, please check and try again" \
+      "To view list of all installed applications please use the command:" \
+      "$ de3 ls"
   fi
 
-  local php_version="56"
-  if [[ -f "${app_dir}/.profile_php7.2" ]]; then
-    php_version="72"
-  elif [[ -f "${app_dir}/.profile_php7.1" ]]; then
-    php_version="71"
+  local command="${1}"
+  if [[ -z "${command}" || "${command}" == "--help" ]]; then
+    warning \
+      "Please specify a running command" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
   fi
+  shift
 
-  local container_name="php-fpm-${php_version}"
+  local app_php_version
+  for app_php_version in "7.2" "7.1" "5.6"; do
+    if [[ -f "${app_dir}/.profile_php${app_php_version}" ]]; then
+      break
+    fi
+  done
+
+  local container_name="php-fpm-${app_php_version/./}"  # With remove a . (dot) from php version
   progress "Checking of existing the '${container_name}' container"
   # The docker-compose v1.12.0 '-q' flag have only
   local container_id="$(run_inside_de3 docker-compose ps -q "${container_name}")"
