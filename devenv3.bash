@@ -488,7 +488,7 @@ function command_set_at {
 
       local app_php_xdebug="off"
       local app_php_xdebug_file="${app_dir}/.profile_xdebug"
-      if [[ -f "${app_php_profile_file}" ]]; then
+      if [[ -f "${app_php_xdebug_file}" ]]; then
         app_php_xdebug="on"
       fi
 
