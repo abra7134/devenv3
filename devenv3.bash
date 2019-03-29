@@ -390,6 +390,141 @@ function command_run_at {
       "${command}" "${@}"
 }
 
+function command_set_at {
+  if [[ "${1}" == "description" ]]; then
+    echo "Set any parameters at selected application (for example: PHP version, enable/disable Xdebug, ...)"
+    return 0
+  fi
+
+  local app_path="${1}"
+  if [[ -z "${app_path}" ]]; then
+    warning \
+      "Please specify an application name where set parameters" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>"
+  fi
+
+  local app_name="${app_path%%/*}"
+  local app_dir="${DEVENV3_APP_DIR}/${app_name}"
+  if [[ ! -d "${app_dir}" ]]; then
+    error \
+      "The specified '${app_name}' application is not exists, please check and try again" \
+      "To view list of all installed applications please use the command:" \
+      "$ de3 ls"
+  fi
+
+  shift
+  local parameter_name="${1}"
+  local parameter_value="${2}"
+  case "${parameter_name}" in
+    "alias" | "Alias" | "ALIAS" )
+      if [[ ! "${parameter_value}" =~ ^[-a-zA-Z0-9]+$ ]]; then
+        error "Please specify a correct alias name with symbols 'a-z' and digits '0-9' only supported"
+      fi
+
+      local app_alias_path="${DEVENV3_APP_DIR}/${parameter_value}"
+      if [[ -d "${app_alias_path}" ]]; then
+        error "The application '${parameter_value}' is already exists, an alias creation is impossible, skipping"
+      elif [[ -h "${app_alias_path}" ]]; then
+        error "The alias '${parameter_value}' is already exists, please specify an another name"
+      fi
+
+      if [[ -h "${app_dir}" ]]; then
+        local app_home=$(
+          run realpath \
+            --relative-base="${DEVENV3_APP_DIR}" \
+            "${app_dir}"
+        )
+        progress "Create a symlink '${parameter_value}' -> '${app_path}' (which is alias to '${app_home}')"
+      else
+        progress "Create a symlink '${parameter_value}' -> '${app_path}'"
+      fi
+
+      run ln --symbolic \
+        "${app_path}" \
+        "${app_alias_path}"
+
+      progress "Done"
+      ;;
+    "php" | "Php" | "PHP" )
+      if [[ ! "${parameter_value}" =~ ^(5\.6|7\.1|7\.2)$ ]]; then
+        error "Please specify a correct version of PHP-interpreter: '5.6', '7.1' or '7.2' only supported"
+      fi
+
+      local app_php_version
+      local app_php_profile_file
+
+      for app_php_version in "7.2" "7.1" "5.6"; do
+        app_php_profile_file="${app_dir}/.profile_php${app_php_version}"
+        if [[ -f "${app_php_profile_file}" ]]; then
+          break
+        fi
+      done
+
+      if [[ "${parameter_value}" == "${app_php_version}" ]]; then
+        warning "The application '${app_name}' has already use PHP ${app_php_version} version, skipping..."
+      fi
+
+      if [[ "${app_php_version}" != "5.6" ]]; then
+        progress "Remove the old '${app_php_profile_file}' file"
+        run rm --force \
+          "${app_php_profile_file}"
+      fi
+
+      if [[ "${parameter_value}" != "5.6" ]]; then
+        app_php_profile_file="${app_dir}/.profile_php${parameter_value}"
+        progress "Write the new '${app_php_profile_file}' empty file"
+        run touch \
+          "${app_php_profile_file}"
+      fi
+
+      progress "Done"
+      ;;
+    "xdebug" | "Xdebug" | "XDEBUG" )
+      if [[ ! "${parameter_value}" =~ ^(on|On|ON|off|Off|OFF)$ ]]; then
+        error "Please specify a correct value of parameter: 'on' and 'off' only supported"
+      fi
+
+      local app_php_xdebug="off"
+      local app_php_xdebug_file="${app_dir}/.profile_xdebug"
+      if [[ -f "${app_php_profile_file}" ]]; then
+        app_php_xdebug="on"
+      fi
+
+      # Compared with a lowest case version of ${parameter_value}
+      case "${app_php_xdebug} -> ${parameter_value,,}" in
+        "on -> on" )
+          warning "The application '${app_name}' already use XDebug extension, skipping..."
+          ;;
+        "off -> off" )
+          warning "The application '${app_name}' already don't use XDebug extension, skipping..."
+          ;;
+        "on -> off" )
+          progress "Remove the old '${app_php_xdebug_file}' file"
+          run rm --force \
+            "${app_php_xdebug_file}"
+          ;;
+        "off -> on" )
+          progress "Write the new '${app_php_xdebug_file}' empty file"
+          run touch \
+            "${app_php_xdebug_file}"
+          ;;
+      esac
+
+      progress "Done"
+      ;;
+    * )
+      warning \
+        "Please specify a parameter and its value which will be set" \
+        "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>" \
+        "" \
+        "Parameters:  alias <alias_name>  Set an alias (alternavite name)" \
+        "             php (5.6|7.1|7.2)   Set a version of PHP-interpreter which will be used" \
+        "             xdebug (on|off)     Enable or disable usage XDebug extension with PHP"
+      ;;
+  esac
+
+}
+
 function command_up {
   if [[ "${1}" == "description" ]]; then
     echo "Run the DevEnv3"
