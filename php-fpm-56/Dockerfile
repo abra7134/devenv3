@@ -48,6 +48,7 @@ RUN \
     php5.6-sqlite3 \
     php5.6-soap \
     php5.6-xml \
+    php5.6-zip \
     php-gearman \
     php-mongodb \
     php-ssh2 \
