@@ -13,10 +13,11 @@ services:
       args:
         - USER_ID
         - GROUP_ID
-    networks:
-      - main
-    ports:
-      - "80:80"
+    network_mode: host
+#    networks:
+#      - main
+#    ports:
+#      - "80:80"
     volumes:
       - /dev/log:/dev/log
       - /run/php
@@ -28,8 +29,9 @@ services:
       args:
         - USER_ID
         - GROUP_ID
-    networks:
-      - main
+    network_mode: host
+#    networks:
+#      - main
     volumes_from:
       - composer
       - nginx
@@ -40,8 +42,9 @@ services:
       args:
         - USER_ID
         - GROUP_ID
-    networks:
-      - main
+    network_mode: host
+#    networks:
+#      - main
     volumes_from:
       - composer
       - nginx
@@ -52,12 +55,13 @@ services:
       args:
         - USER_ID
         - GROUP_ID
-    networks:
-      - main
+    network_mode: host
+#    networks:
+#      - main
     volumes_from:
       - composer
       - nginx
 
-networks:
-  main:
-    driver: bridge
+#networks:
+#  main:
+#    driver: bridge
