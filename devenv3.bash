@@ -529,7 +529,7 @@ function command_set_at {
 
 function command_up {
   if [[ "${1}" == "description" ]]; then
-    echo "Run the DevEnv3"
+    echo "Run the DevEnv3 (with preliminary run of the 'down' command)"
     return 0
   fi
 
@@ -541,6 +541,9 @@ function command_up {
     "For access to your applications please type in the browser:" \
     "http://<application_name>.localhost"
 
+  progress "Starting 'docker-compose down' command"
+  run_inside_de3 \
+    docker-compose down
   progress "Starting 'docker-compose up' command"
   run_inside_de3 \
     docker-compose up
