@@ -23,12 +23,14 @@ function _print {
 
   case "${print_type}" in
     "info" )
+      local info_message
       for info_message in "${@}"; do
         printf "!!! ${info_message}\n"
       done
       echo
       ;;
     "progress" )
+      local progress_message
       for progress_message in "${@}"; do
         printf "[*] ${progress_message} ...\n"
       done
@@ -38,6 +40,7 @@ function _print {
         local ident="!!! ${print_type^^}:"
         local ident_length="${#ident}"
         echo
+        local error_message
         for error_message in "${@}"; do
           printf "%-${ident_length}s %s\n" "${ident}" "${error_message}"
           ident=""
@@ -80,7 +83,7 @@ function run {
     internal "Function parameters needs to be specified"
   fi
 
-  command_type="$(type -t "${command}")"
+  local command_type="$(type -t "${command}")"
   if [[ "${command_type}" == "file" ]]; then
     shift
     "${command}" "${@}" \
@@ -148,11 +151,14 @@ function command_help {
   fi
 
   echo "Usage:"
+
+  local devenv3_alias
   for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
     echo "  ${devenv3_alias} COMMAND [OPTIONS]"
   done
   echo
   echo "Commands:"
+  local function_name
   for function_name in $(compgen -A function); do
     if [[ "${function_name}" =~ ^command_ ]]; then
       printf "  %-10s %s\n" "${function_name#command_}" "$(${function_name} description)"
@@ -190,6 +196,7 @@ function command_init {
     "${BASHRC_PATH}"
   {
     echo "${begin_string}"
+    local devenv3_alias
     for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
       echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /bin/bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
     done
@@ -208,13 +215,14 @@ function command_ls {
     return 0
   fi
 
-  local app_{branch,dir,home,index_file,name,php_version,url}
+  local app_{branch,home,index_file,name,php_version,url}
   local index_{dir,file}
 
   local print_format="%-20s %-40s %-20s %-20s %-12s %-10s\n"
   printf "${print_format}" \
     "NAME" "URL" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
+  local app_dir
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
     if [[    ! -d "${app_dir}" \
           && ! -h "${app_dir}" ]]; then
@@ -454,7 +462,6 @@ function command_set_at {
 
       local app_php_version
       local app_php_profile_file
-
       for app_php_version in "7.2" "7.1" "5.6"; do
         app_php_profile_file="${app_dir}/.profile_php${app_php_version}"
         if [[ -f "${app_php_profile_file}" ]]; then
