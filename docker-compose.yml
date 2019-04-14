@@ -47,6 +47,9 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
     dns:
       - *dnsmasq-ipv4-address
     networks:
@@ -61,6 +64,9 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
     dns:
       - *dnsmasq-ipv4-address
     networks:
@@ -75,6 +81,9 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
     dns:
       - *dnsmasq-ipv4-address
     networks:
