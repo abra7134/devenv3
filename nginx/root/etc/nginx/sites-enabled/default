@@ -114,11 +114,18 @@ server {
         set $err_response "Указанного URI не существует,<br>файл $fastcgi_script_name не найден в $document_root/";
         return 404;
       }
+
+      set $x_forwarded_for $http_x_forwarded_for;
+      if ( $x_forwarded_for = "" ) {
+        set $x_forwarded_for $remote_addr;
+      }
+
       fastcgi_split_path_info ^(.+\.php)(/.*)$;
       fastcgi_read_timeout 120s;
       include fastcgi_params;
-      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      fastcgi_param HTTP_X_FORWARDED_FOR $x_forwarded_for;
       fastcgi_param PATH_INFO $fastcgi_path_info;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
       fastcgi_param SERVER_NAME $host;
       fastcgi_pass $php_sock;
     }
