@@ -274,20 +274,20 @@ function command_ls {
         app_php_version+="+xdebug"
       fi
 
-      for index_dir in "public" "api/web" "web" ""; do
+      for index_dir in "public/" "api/web/" "web/" ""; do
         if [[ -d "${app_dir}/${index_dir}" ]]; then
           break
         fi
       done
       for index_file in "index.htm" "index.html" "index.php" ""; do
-        if [[ -f "${app_dir}/${index_dir}/${index_file}" ]]; then
+        if [[ -f "${app_dir}/${index_dir}${index_file}" ]]; then
           break
         fi
       done
       if [[ -z "${index_file}" ]]; then
         app_index_file="(NOT FOUND)"
       else
-        app_index_file="${index_dir}/${index_file}"
+        app_index_file="${index_dir}${index_file}"
       fi
 
       index_dir="${app_dir}"

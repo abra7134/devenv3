@@ -209,6 +209,7 @@ xdebug.remote_port=порт_xdebug_отладчика
 $ de3 ls
 ...
 NAME          URL                          HOME               INDEX FILE           PHP         BRANCH
+api-1         http://api-1.localhost/      api-1/             index.php            7.1         -
 admin         http://admin.localhost/      site/backend/      web/index.php        7.2         default
 catchall      http://*.localhost/          site/frontend/     web/index.php        7.2+xdebug  default
 default       http://localhost/            site/landing/      web/index.php        5.6         default
