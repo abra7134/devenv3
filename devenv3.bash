@@ -311,6 +311,46 @@ function command_ls {
   done
 }
 
+
+function command_rm {
+  if [[ "${1}" == "description" ]]; then
+    echo "Remove unnecessary applications or their aliases"
+    return 0
+  fi
+
+  local command="${1}"
+  if [[ -z "${command}" || "${command}" == "--help" ]]; then
+    warning \
+      "Please specify applications which must be removed" \
+      "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name1> [application_name2]..."
+  fi
+
+  local app_{dir,home,name}
+  for app_name in "${@}"; do
+    app_dir="${DEVENV3_APP_DIR}/${app_name}"
+
+    if [ -h "${app_dir}" ]; then
+      app_home=$(
+        run realpath \
+          --relative-base="${DEVENV3_APP_DIR}" \
+          "${app_dir}"
+      )
+
+      # Remove an alias only at inside of DEVENV3_APP_DIR directory
+      if [[ "${app_home::1}" != "/" ]]; then
+        progress "Remove an alias '${app_name}' of '${app_home}' application"
+        run rm "${app_dir}"
+      fi
+
+    elif [ -d "${app_dir}" ]; then
+      progress "Remove an application '${app_name}'"
+      run rm --recursive "${app_dir}"
+    fi
+  done
+
+  progress "Done"
+}
+
 function command_run {
   if [[ "${1}" == "description" ]]; then
     echo "Run any command inside the DevEnv3 (for example: composer, php and etc)"
