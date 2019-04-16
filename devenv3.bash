@@ -215,14 +215,12 @@ function command_ls {
     return 0
   fi
 
-  local app_{branch,home,index_file,name,php_version,url}
-  local index_{dir,file}
-
-  local print_format="%-20s %-40s %-20s %-20s %-12s %-10s\n"
+  local print_format="%-20s %-40s %-2s %-20s %-20s %-12s %-10s\n"
   printf "${print_format}" \
-    "NAME" "URL" "HOME" "INDEX FILE" "PHP" "BRANCH"
+    "NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
-  local app_dir
+  local app_{branch,dir,home,index_file,name,php_version,type,url}
+  local index_{dir,file}
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
     if [[    ! -d "${app_dir}" \
           && ! -h "${app_dir}" ]]; then
@@ -251,6 +249,7 @@ function command_ls {
 
     app_branch="-"
     app_index_file="-"
+    app_type=""
     app_php_version="-"
 
     # Don't process application if realdir begin with / that is OUTSIDE applications directory
@@ -260,6 +259,12 @@ function command_ls {
     elif [[ ! -d "${DEVENV3_APP_DIR}/${app_home}" ]]; then
       app_home="(MISSING)"
     else
+      if [[ "${app_name}" == "${app_home}" ]]; then
+        app_type="=="
+      else
+        app_type="->"
+      fi
+
       # Overwrite a app_dir with real directory
       app_dir="${DEVENV3_APP_DIR}/${app_home}"
       # For a pretty printing
@@ -304,11 +309,16 @@ function command_ls {
     printf "${print_format}" \
       "${app_name}" \
       "${app_url}" \
+      "${app_type}" \
       "${app_home}" \
       "${app_index_file}" \
       "${app_php_version}" \
       "${app_branch}"
   done
+
+  echo
+  info "Legend:" \
+       "  TP - type of application: '->' is alias, '==' is a direct transformation of an application name to a folder name"
 }
 
 

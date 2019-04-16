@@ -206,19 +206,23 @@ xdebug.remote_port=порт_xdebug_отладчика
 С помощью команды `de3 ls` можно посмотреть список всех установленных **PHP**-приложений,
 а также получить дополнительную информацию о версии **PHP**-интерпретатора, выбранном индексном файле,
 а также наименовании текущей **Mercurial**-ветки.
+
+Колонка `TP` указывает **тип** приложения:
+`->` означает алиас, `==` означает прямое отображение имени приложения в имя папки.
+
 ```sh
 $ de3 ls
 ...
-NAME          URL                          HOME               INDEX FILE           PHP         BRANCH
-api-1         http://api-1.localhost/      api-1/             index.php            7.1         -
-admin         http://admin.localhost/      site/backend/      web/index.php        7.2         default
-catchall      http://*.localhost/          site/frontend/     web/index.php        7.2+xdebug  default
-default       http://localhost/            site/landing/      web/index.php        5.6         default
-test          http://test.localhost/       test/              api/web/index.php    7.1         release-1.57
-test2         http://test2.localhost/      test/              api/web/index.php    7.1         release-1.57
-test3         http://test3.localhost/      (OUTSIDE)          -                    -           -
-test4         http://test4.localhost/      (MISSING)          -                    -           -
-site          http://site.localhost/       site/              (NOT FOUND)          5.6         default
+NAME          URL                          TP HOME               INDEX FILE           PHP         BRANCH
+api-1         http://api-1.localhost/      == api-1/             index.php            7.1         -
+admin         http://admin.localhost/      -> site/backend/      web/index.php        7.2         default
+catchall      http://*.localhost/          -> site/frontend/     web/index.php        7.2+xdebug  default
+default       http://localhost/            -> site/landing/      web/index.php        5.6         default
+test          http://test.localhost/       == test/              api/web/index.php    7.1         release-1.57
+test2         http://test2.localhost/      -> test/              api/web/index.php    7.1         release-1.57
+test3         http://test3.localhost/         (OUTSIDE)          -                    -           -
+test4         http://test4.localhost/         (MISSING)          -                    -           -
+site          http://site.localhost/       == site/              (NOT FOUND)          5.6         default
 ```
 
 #### Доступ к консоли
