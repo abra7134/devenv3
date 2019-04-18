@@ -165,7 +165,7 @@ function command_help {
     fi
   done
   echo
-  echo "Run '${DEVENV3_ALIAS} COMMAND --help' for more information on a command."
+  echo "Run '${DEVENV3_ALIAS} COMMAND --help' for more information on a command (IN A FUTURE RELEASE)."
   echo
   exit 0
 }
