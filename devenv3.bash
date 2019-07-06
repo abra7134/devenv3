@@ -242,17 +242,21 @@ function command_ls {
 
     app_name="${app_dir##*/}"
 
-    case "${app_name}" in
-      "catchall" )
-        app_url="http://*.${DEVENV3_APP_DOMAIN}/"
-        ;;
-      "default" )
-        app_url="http://${DEVENV3_APP_DOMAIN}/"
-        ;;
-      * )
-        app_url="http://${app_name}.${DEVENV3_APP_DOMAIN}/"
-        ;;
-    esac
+    if [[ ! "${app_name}" =~ ^[[:alnum:]_-]+$ ]]; then
+      app_url="(WRONG NAME)"
+    else
+      case "${app_name}" in
+        "catchall" )
+          app_url="http://*.${DEVENV3_APP_DOMAIN}/"
+          ;;
+       "default" )
+          app_url="http://${DEVENV3_APP_DOMAIN}/"
+          ;;
+        * )
+          app_url="http://${app_name}.${DEVENV3_APP_DOMAIN}/"
+          ;;
+      esac
+    fi
 
     app_home=$(
       run realpath \
@@ -501,8 +505,8 @@ function command_set_at {
   local parameter_value="${2}"
   case "${parameter_name}" in
     "alias" | "Alias" | "ALIAS" )
-      if [[ ! "${parameter_value}" =~ ^[-a-zA-Z0-9]+$ ]]; then
-        error "Please specify a correct alias name with symbols 'a-z' and digits '0-9' only supported"
+      if [[ ! "${parameter_value}" =~ ^[[:alnum:]_-]+$ ]]; then
+        error "Please specify a correct alias name with symbols 'a-z', 'A-Z', '_', '-' and digits '0-9' only supported"
       fi
 
       local app_alias_path="${DEVENV3_APP_DIR}/${parameter_value}"

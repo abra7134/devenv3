@@ -30,7 +30,7 @@ server {
 
 server {
   listen 80;
-  server_name ~((?<project>[[:alnum:]-]+)\.)?(?<site>localhost)$;
+  server_name ~((?<project>[[:alnum:]-_]+)\.)?(?<site>localhost)$;
   include snippets/http_check_user_agent.conf;
 
   client_max_body_size 32m;

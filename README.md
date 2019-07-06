@@ -109,7 +109,7 @@ $ de3 up
 Приложение будет сразу доступно по локальному адресу: `http://имя_приложения.localhost`
 (например: `http://api_client.localhost`).
 
-`имя_приложения` может содержать буквы, цифры и тире (в regexp нотации `[[:alnum:]-]`).
+`имя_приложения` может содержать буквы, цифры, тире и знак подчеркивания (в regexp нотации `[[:alnum:]_-]`).
 
 Также существуют два специальных имени: `default` и `catchall` с нестандартным поведением:
 
@@ -216,6 +216,7 @@ $ de3 ls
 NAME          URL                          TP HOME               INDEX FILE           PHP         BRANCH
 api-1         http://api-1.localhost/      == api-1/             index.php            7.1         -
 admin         http://admin.localhost/      -> site/backend/      web/index.php        7.2         hg:default
+bad+name      (WRONG NAME)                 == bad+name/          (NOT FOUND)          5.6         -
 catchall      http://*.localhost/          -> site/frontend/     web/index.php        7.2+xdebug  hg:default
 default       http://localhost/            -> site/landing/      web/index.php        5.6         hg:default
 test          http://test.localhost/       == test/              api/web/index.php    7.1         git:release-1.57
