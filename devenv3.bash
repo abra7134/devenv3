@@ -188,12 +188,19 @@ function command_init {
   {
     echo "USER_ID=`id --user`"
     echo "GROUP_ID=`id --group`"
-  } > "${devenv3_env_filepath}"
+  } > "${devenv3_env_filepath}" \
+    || error "Failed to write file"
 
-  progress "Appending DevEnv3 aliases to '${BASHRC_PATH}'"
-  run sed --in-place \
-    "/${begin_string}/,/${end_string}/d" \
-    "${BASHRC_PATH}"
+  if [ -f "${BASHRC_PATH}" ]; then
+    progress "Appending DevEnv3 aliases to '${BASHRC_PATH}'"
+    run sed --in-place \
+      "/${begin_string}/,/${end_string}/d" \
+      "${BASHRC_PATH}"
+  elif [ ! -h "${BASHRC_PATH}" -a ! -e "${BASHRC_PATH}" ]; then
+    progress "Writing DevEnv3 aliases to '${BASHRC_PATH}'"
+  else
+    error "Failed to write '${BASHRC_PATH}' because it's not a regular file"
+  fi
   {
     echo "${begin_string}"
     local devenv3_alias
@@ -201,7 +208,8 @@ function command_init {
       echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /bin/bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
     done
     echo "${end_string}"
-  } >> "${BASHRC_PATH}"
+  } >> "${BASHRC_PATH}" \
+    || error "Failed to write file"
 
   progress "Done"
 
