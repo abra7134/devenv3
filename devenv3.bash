@@ -128,7 +128,7 @@ function command_build {
 
   progress "Starting 'docker-compose build' command"
   run_inside_de3 \
-    docker-compose build
+    docker-compose build "${@}"
   progress "Done"
 }
 
