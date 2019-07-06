@@ -62,6 +62,7 @@ RUN \
     ;\
   apt-get -y install \
     git \
+    mercurial \
     libdbi-perl \
     libdbd-mysql-perl \
     mysql-client-5.5 \
