@@ -14,6 +14,9 @@ DEVENV3_ALIAS="${_devenv3_alias:-${DEVENV3_FILENAME}}"
 BASHRC_PATH="${HOME}/.bashrc"
 ZSHRC_PATH="${HOME}/.zshrc"
 
+# Disable file name generation (globbing)
+set -f
+
 function _print {
   local print_type="${1}"
   shift
@@ -234,6 +237,8 @@ function command_ls {
 
   local app_{branch,branch_temp,dir,home,index_file,name,php_version,type,url}
   local index_{dir,file}
+
+  set +f
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
     if [[    ! -d "${app_dir}" \
           && ! -h "${app_dir}" ]]; then
@@ -263,10 +268,9 @@ function command_ls {
         --relative-base="${DEVENV3_APP_DIR}" \
         "${app_dir}"
     )
-
     app_branch="-"
     app_index_file="-"
-    app_type=""
+    app_type="->"
     app_php_version="-"
 
     # Don't process application if realdir begin with / that is OUTSIDE applications directory
@@ -278,8 +282,6 @@ function command_ls {
     else
       if [[ "${app_name}" == "${app_home}" ]]; then
         app_type="=="
-      else
-        app_type="->"
       fi
 
       # Overwrite a app_dir with real directory
@@ -378,6 +380,8 @@ function command_rm {
       if [[ "${app_home::1}" != "/" ]]; then
         progress "Remove an alias '${app_name}' of '${app_home}' application"
         run rm "${app_dir}"
+      else
+        progress "Skipping a removing an alias '${app_name}' because it linked to outside of Applications directory"
       fi
 
     elif [ -d "${app_dir}" ]; then
@@ -491,14 +495,29 @@ function command_set_at {
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>"
   fi
 
-  local app_name="${app_path%%/*}"
-  local app_dir="${DEVENV3_APP_DIR}/${app_name}"
-  if [[ ! -d "${app_dir}" ]]; then
+  local app_path="${DEVENV3_APP_DIR}/${app_name}"
+  if [[ ! -d "${app_path}" && ! -h "${app_path}" ]]; then
     error \
       "The specified '${app_name}' application is not exists, please check and try again" \
       "To view list of all installed applications please use the command:" \
       "$ de3 ls"
   fi
+
+  # ${app_home} is relative to ${DEVENV3_APP_DIR} directory
+  local app_home=$(
+    run \
+      realpath \
+        --relative-base="${DEVENV3_APP_DIR}" \
+        "${app_path}"
+  )
+  if [[ "${app_home::1}" == "/" ]]; then
+    error \
+      "The specified '${app_name}' application has a home which is placed outside Applications directory" \
+      "Please specify an another application name!" \
+      "To view list of all installed applications please use the command:" \
+      "$ de3 ls"
+  fi
+  local app_real_path="${DEVENV3_APP_DIR}/${app_home}"
 
   shift
   local parameter_name="${1}"
@@ -516,12 +535,7 @@ function command_set_at {
         error "The alias '${parameter_value}' is already exists, please specify an another name"
       fi
 
-      if [[ -h "${app_dir}" ]]; then
-        local app_home=$(
-          run realpath \
-            --relative-base="${DEVENV3_APP_DIR}" \
-            "${app_dir}"
-        )
+      if [[ "${app_name}" != "${app_home}" ]]; then
         progress "Create a symlink '${parameter_value}' -> '${app_path}' (which is alias to '${app_home}')"
       else
         progress "Create a symlink '${parameter_value}' -> '${app_path}'"
@@ -541,7 +555,7 @@ function command_set_at {
       local app_php_version
       local app_php_profile_file
       for app_php_version in "7.2" "7.1" "5.6"; do
-        app_php_profile_file="${app_dir}/.profile_php${app_php_version}"
+        app_php_profile_file="${app_real_path}/.profile_php${app_php_version}"
         if [[ -f "${app_php_profile_file}" ]]; then
           break
         fi
@@ -558,7 +572,7 @@ function command_set_at {
       fi
 
       if [[ "${parameter_value}" != "5.6" ]]; then
-        app_php_profile_file="${app_dir}/.profile_php${parameter_value}"
+        app_php_profile_file="${app_real_path}/.profile_php${parameter_value}"
         progress "Write the new '${app_php_profile_file}' empty file"
         run touch \
           "${app_php_profile_file}"
@@ -572,7 +586,7 @@ function command_set_at {
       fi
 
       local app_php_xdebug="off"
-      local app_php_xdebug_file="${app_dir}/.profile_xdebug"
+      local app_php_xdebug_file="${app_real_path}/.profile_xdebug"
       if [[ -f "${app_php_xdebug_file}" ]]; then
         app_php_xdebug="on"
       fi

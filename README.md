@@ -221,8 +221,8 @@ catchall      http://*.localhost/          -> site/frontend/     web/index.php  
 default       http://localhost/            -> site/landing/      web/index.php        5.6         hg:default
 test          http://test.localhost/       == test/              api/web/index.php    7.1         git:release-1.57
 test2         http://test2.localhost/      -> test/              api/web/index.php    7.1         git:release-1.57
-test3         http://test3.localhost/         (OUTSIDE)          -                    -           -
-test4         http://test4.localhost/         (MISSING)          -                    -           -
+test3         http://test3.localhost/      -> (OUTSIDE)          -                    -           -
+test4         http://test4.localhost/      -> (MISSING)          -                    -           -
 site          http://site.localhost/       == site/              (NOT FOUND)          5.6         hg:default
 ```
 
