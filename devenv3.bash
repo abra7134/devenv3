@@ -653,7 +653,7 @@ main_footer
 
 command_name="${1:-help}"
 if ! declare -F "command_${command_name}" >/dev/null; then
-  command_name="help"
+  error "Command '${command_name}' is not exists, please run '${DEVENV3_ALIAS} help' or just '${DEVENV3_ALIAS}' command"
 fi
 
 shift
