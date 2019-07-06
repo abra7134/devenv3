@@ -422,7 +422,7 @@ function command_run_at {
   fi
 
   local app_path="${1}"
-  if [[ -z "${app_path}" ]]; then
+  if [[ -z "${app_path}" || "${app_path}" == "--help" ]]; then
     warning \
       "Please specify an application name where the command will run" \
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
@@ -488,8 +488,8 @@ function command_set_at {
     return 0
   fi
 
-  local app_path="${1}"
-  if [[ -z "${app_path}" ]]; then
+  local app_name="${1}"
+  if [[ -z "${app_name}" || "${app_name}" == "--help" ]]; then
     warning \
       "Please specify an application name where set parameters" \
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>"
