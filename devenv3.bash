@@ -12,6 +12,7 @@ DEVENV3_ALIASES=("de3" "denv3" "devenv3")
 DEVENV3_ALIAS="${_devenv3_alias:-${DEVENV3_FILENAME}}"
 
 BASHRC_PATH="${HOME}/.bashrc"
+ZSHRC_PATH="${HOME}/.zshrc"
 
 function _print {
   local print_type="${1}"
@@ -172,13 +173,14 @@ function command_help {
 
 function command_init {
   if [[ "${1}" == "description" ]]; then
-    echo "Append DevEnv3 aliases to .bashrc and other initializations"
+    echo "Append DevEnv3 aliases to .bashrc, .zshrc and other initializations"
     return 0
   fi
 
   local begin_string="### DevEnv3 aliases BEGIN ###"
   local end_string="### DevEnv3 aliases END ###"
   local devenv3_env_filepath="${DEVENV3_HOME_DIR}/.env"
+  local rc_path
 
   progress "Creating Applications directory"
   run mkdir --parents \
@@ -191,30 +193,33 @@ function command_init {
   } > "${devenv3_env_filepath}" \
     || error "Failed to write file"
 
-  if [ -f "${BASHRC_PATH}" ]; then
-    progress "Appending DevEnv3 aliases to '${BASHRC_PATH}'"
-    run sed --in-place \
-      "/${begin_string}/,/${end_string}/d" \
-      "${BASHRC_PATH}"
-  elif [ ! -h "${BASHRC_PATH}" -a ! -e "${BASHRC_PATH}" ]; then
-    progress "Writing DevEnv3 aliases to '${BASHRC_PATH}'"
-  else
-    error "Failed to write '${BASHRC_PATH}' because it's not a regular file"
-  fi
-  {
-    echo "${begin_string}"
-    local devenv3_alias
-    for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
-      echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /usr/bin/env bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
-    done
-    echo "${end_string}"
-  } >> "${BASHRC_PATH}" \
-    || error "Failed to write file"
+  for rc_path in "${BASHRC_PATH}" "${ZSHRC_PATH}"; do
+    if [ -f "${rc_path}" ]; then
+      progress "Appending DevEnv3 aliases to '${rc_path}'"
+      run sed --in-place \
+        "/${begin_string}/,/${end_string}/d" \
+        "${rc_path}"
+    elif [ ! -h "${rc_path}" -a ! -e "${rc_path}" ]; then
+      progress "Writing DevEnv3 aliases to '${rc_path}'"
+    else
+      error "Failed to write '${rc_path}' because it's not a regular file"
+    fi
+    {
+      echo "${begin_string}"
+      local devenv3_alias
+      for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
+        echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /usr/bin/env bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
+      done
+      echo "${end_string}"
+    } >> "${rc_path}" \
+      || error "Failed to write file"
+  done
 
   progress "Done"
 
-  warning "To work of DevEnv3 aliases properly the '.bashrc' file need to be re-read" \
-          "Please run another copy of terminal OR run this command: source ${BASHRC_PATH}"
+  warning "To work of DevEnv3 aliases properly the another copy of terminal to be run" \
+          "OR run this command in BASH: source ${BASHRC_PATH}" \
+          "                    in  ZSH: source ${ZSHRC_PATH}"
 }
 
 function command_ls {
