@@ -233,7 +233,7 @@ function command_ls {
 
   local print_format="%-20s %-40s %-2s %-20s %-20s %-12s %-10s\n"
   printf "${print_format}" \
-    "NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
+    "APP NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
   local app_{branch,branch_temp,dir,home,index_file,name,php_version,type,url}
   local index_{dir,file}
