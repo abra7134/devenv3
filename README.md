@@ -33,7 +33,7 @@ $ git clone https://github.com/abra7134/devenv3 ~/devenv3
 - _down_ - удаление контейнеров Окружения Разработки (необходимо при обновлениях)
 - _help_ - помощник по использованию скрипта
 - _ls_ - вывод списка всех приложений с указанием используемой версии **PHP**-интерпретатора,
-выбранного индексного файла, а также выбранной **Mercurial**-ветки
+выбранного индексного файла, а также выбранной **GIT**-ветки или **Mercurial**-ветки
 - _init_ - первоначальная инициализация Окружения Разработки (можно запускать несколько раз)
 - _rm_ - удаление приложений или их алиасов
 - _run_ - запуск команды внутри Окружения Разработки (например: `composer`, `php yii`, `php artisan` и т.д.)
@@ -205,7 +205,7 @@ xdebug.remote_port=порт_xdebug_отладчика
 
 С помощью команды `de3 ls` можно посмотреть список всех установленных **PHP**-приложений,
 а также получить дополнительную информацию о версии **PHP**-интерпретатора, выбранном индексном файле,
-а также наименовании текущей **Mercurial**-ветки.
+а также наименовании текущей **GIT**-ветки или **Mercurial**-ветки.
 
 Колонка `TP` указывает **тип** приложения:
 `->` означает алиас, `==` означает прямое отображение имени приложения в имя папки.
@@ -215,14 +215,14 @@ $ de3 ls
 ...
 NAME          URL                          TP HOME               INDEX FILE           PHP         BRANCH
 api-1         http://api-1.localhost/      == api-1/             index.php            7.1         -
-admin         http://admin.localhost/      -> site/backend/      web/index.php        7.2         default
-catchall      http://*.localhost/          -> site/frontend/     web/index.php        7.2+xdebug  default
-default       http://localhost/            -> site/landing/      web/index.php        5.6         default
-test          http://test.localhost/       == test/              api/web/index.php    7.1         release-1.57
-test2         http://test2.localhost/      -> test/              api/web/index.php    7.1         release-1.57
+admin         http://admin.localhost/      -> site/backend/      web/index.php        7.2         hg:default
+catchall      http://*.localhost/          -> site/frontend/     web/index.php        7.2+xdebug  hg:default
+default       http://localhost/            -> site/landing/      web/index.php        5.6         hg:default
+test          http://test.localhost/       == test/              api/web/index.php    7.1         git:release-1.57
+test2         http://test2.localhost/      -> test/              api/web/index.php    7.1         git:release-1.57
 test3         http://test3.localhost/         (OUTSIDE)          -                    -           -
 test4         http://test4.localhost/         (MISSING)          -                    -           -
-site          http://site.localhost/       == site/              (NOT FOUND)          5.6         default
+site          http://site.localhost/       == site/              (NOT FOUND)          5.6         hg:default
 ```
 
 #### Доступ к консоли

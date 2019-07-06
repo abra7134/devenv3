@@ -232,7 +232,7 @@ function command_ls {
   printf "${print_format}" \
     "NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
-  local app_{branch,dir,home,index_file,name,php_version,type,url}
+  local app_{branch,branch_temp,dir,home,index_file,name,php_version,type,url}
   local index_{dir,file}
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
     if [[    ! -d "${app_dir}" \
@@ -311,9 +311,20 @@ function command_ls {
       index_dir="${app_dir}"
       # Walk to all upper directories when a searching of branch name like 'hg' command :)
       while [[ "${index_dir}" != "${DEVENV3_APP_DIR}" ]]; do
-        if [[ -s "${index_dir}/.hg/branch" ]]; then
-          read app_branch <"${index_dir}/.hg/branch"
-          break
+        if [[ -s "${index_dir}/.git/HEAD" ]]; then
+          read app_branch_temp <"${index_dir}/.git/HEAD"
+          # FIXME: realise the better branch name checker
+          if [[ "${app_branch_temp}" =~ ^ref:\ refs/heads/([[:alnum:]\._-]+)$ ]]; then
+             app_branch="git:${BASH_REMATCH[1]}"
+             break
+          fi
+        elif [[ -s "${index_dir}/.hg/branch" ]]; then
+          read app_branch_temp <"${index_dir}/.hg/branch"
+          # FIXME: realise the better branch name checker
+          if [[ "${app_branch_temp}" =~ ^[[:alnum:]\._-]+$ ]]; then
+            app_branch="hg:${app_branch_temp}"
+            break
+          fi
         fi
         index_dir="${index_dir%/*}"
       done
