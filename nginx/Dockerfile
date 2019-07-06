@@ -1,11 +1,7 @@
-FROM debian:8.11
+FROM debian:9.13-slim
 
 RUN \
   set -eux \
-    ;\
-  sed --in-place \
-    '/jessie-updates/d' \
-    /etc/apt/sources.list \
     ;\
   export DEBIAN_FRONTEND=noninteractive \
     ;\
@@ -15,6 +11,8 @@ RUN \
     apt-transport-https \
     apt-utils \
     curl \
+    gnupg2 \
+    lsb-release \
     ;
 
 RUN \
@@ -22,16 +20,16 @@ RUN \
     ;\
   export DEBIAN_FRONTEND=noninteractive \
     ;\
-  curl --silent https://www.dotdeb.org/dotdeb.gpg \
+  curl --silent https://nginx.org/keys/nginx_signing.key \
   | apt-key add - \
     ;\
-  echo "deb http://packages.dotdeb.org jessie all" \
-  > /etc/apt/sources.list.d/packages_dotdeb_org.list \
+  echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx" \
+  > /etc/apt/sources.list.d/nginx.list \
     ;\
   apt-get -y update \
     ;
 
-ARG NGINX_VERSION="1.12.2-1~dotdeb+8.1"
+ARG NGINX_VERSION="1.14.2"
 
 RUN \
   set -eux \
@@ -39,13 +37,13 @@ RUN \
   export DEBIAN_FRONTEND=noninteractive \
     ;\
   { \
-    echo "Package: nginx-*"; \
-    echo "Pin: version ${NGINX_VERSION}"; \
+    echo "Package: nginx"; \
+    echo "Pin: version ${NGINX_VERSION}-*"; \
     echo "Pin-Priority: 1001"; \
   } > /etc/apt/preferences.d/00nginx \
     ;\
   apt-get -y install \
-    nginx-light \
+    nginx \
     ;
 
 ARG USER_ID=0
@@ -73,7 +71,7 @@ RUN \
       ~www-data/ \
       ;\
   fi \
-    ;
+  ;
 
 COPY root/ /
 

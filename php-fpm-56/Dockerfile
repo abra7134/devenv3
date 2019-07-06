@@ -1,11 +1,7 @@
-FROM debian:8.11
+FROM debian:9.13
 
 RUN \
   set -eux \
-    ;\
-  sed --in-place \
-    '/jessie-updates/d' \
-    /etc/apt/sources.list \
     ;\
   export DEBIAN_FRONTEND=noninteractive \
     ;\
@@ -15,6 +11,8 @@ RUN \
     apt-transport-https \
     apt-utils \
     curl \
+    gnupg2 \
+    lsb-release \
     ;
 
 RUN \
@@ -25,7 +23,7 @@ RUN \
   curl --silent https://packages.sury.org/php/apt.gpg \
   | apt-key add - \
     ;\
-  echo "deb https://packages.sury.org/php/ jessie main" \
+  echo "deb https://packages.sury.org/php/ `lsb_release -cs` main" \
   > /etc/apt/sources.list.d/packages_sury_org_php.list \
     ;\
   apt-get -y update \
@@ -40,19 +38,19 @@ RUN \
     php5.6-fpm \
     php5.6-bcmath \
     php5.6-curl \
+    php5.6-gearman \
     php5.6-gd \
     php5.6-mbstring \
     php5.6-mcrypt \
+    php5.6-mongodb \
     php5.6-mysql \
     php5.6-intl \
     php5.6-sqlite3 \
     php5.6-soap \
+    php5.6-ssh2 \
+    php5.6-xdebug \
     php5.6-xml \
     php5.6-zip \
-    php-gearman \
-    php-mongodb \
-    php-ssh2 \
-    php-xdebug \
     ;
 
 RUN \
@@ -65,7 +63,7 @@ RUN \
     mercurial \
     libdbi-perl \
     libdbd-mysql-perl \
-    mysql-client-5.5 \
+    mariadb-client-10.1 \
     unzip \
     ;
 
