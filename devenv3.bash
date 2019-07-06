@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DEVENV3_VERSION="0.4beta"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
@@ -205,7 +205,7 @@ function command_init {
     echo "${begin_string}"
     local devenv3_alias
     for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
-      echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /bin/bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
+      echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /usr/bin/env bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
     done
     echo "${end_string}"
   } >> "${BASHRC_PATH}" \
