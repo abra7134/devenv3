@@ -1,11 +1,7 @@
-FROM debian:8.11
+FROM debian:9.13
 
 RUN \
   set -eux \
-    ;\
-  sed --in-place \
-    '/jessie-updates/d' \
-    /etc/apt/sources.list \
     ;\
   export DEBIAN_FRONTEND=noninteractive \
     ;\

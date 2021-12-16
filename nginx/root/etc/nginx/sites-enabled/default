@@ -10,7 +10,6 @@ server {
 server {
   listen 80;
   server_name localhost;
-  include snippets/http_check_user_agent.conf;
 
   location / {
     rewrite ^/(.*)$ /error-page/$1;
@@ -30,8 +29,7 @@ server {
 
 server {
   listen 80;
-  server_name ~((?<project>[[:alnum:]-]+)\.)?(?<site>localhost)$;
-  include snippets/http_check_user_agent.conf;
+  server_name ~((?<project>[[:alnum:]-_]+)\.)?(?<site>localhost)$;
 
   client_max_body_size 32m;
 
@@ -115,15 +113,13 @@ server {
         return 404;
       }
 
-      set $x_forwarded_for $http_x_forwarded_for;
-      if ( $x_forwarded_for = "" ) {
-        set $x_forwarded_for $remote_addr;
-      }
-
       fastcgi_split_path_info ^(.+\.php)(/.*)$;
       fastcgi_read_timeout 120s;
       include fastcgi_params;
-      fastcgi_param HTTP_X_FORWARDED_FOR $x_forwarded_for;
+      fastcgi_param HTTP_X_FORWARDED_FOR $proxy_add_x_forwarded_for;
+      fastcgi_param HTTP_X_FORWARDER_PROTO $scheme;
+      fastcgi_param HTTP_X_REAL_IP $remote_addr;
+      fastcgi_param HTTP_X_REAL_PORT $remote_port;
       fastcgi_param PATH_INFO $fastcgi_path_info;
       fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
       fastcgi_param SERVER_NAME $host;

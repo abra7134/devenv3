@@ -1,11 +1,7 @@
-FROM debian:8.11
+FROM debian:9.13
 
 RUN \
   set -eux \
-    ;\
-  sed --in-place \
-    '/jessie-updates/d' \
-    /etc/apt/sources.list \
     ;\
   export DEBIAN_FRONTEND=noninteractive \
     ;\
@@ -15,6 +11,8 @@ RUN \
     apt-transport-https \
     apt-utils \
     curl \
+    gnupg2 \
+    lsb-release \
     ;
 
 RUN \
@@ -25,7 +23,7 @@ RUN \
   curl --silent https://packages.sury.org/php/apt.gpg \
   | apt-key add - \
     ;\
-  echo "deb https://packages.sury.org/php/ jessie main" \
+  echo "deb https://packages.sury.org/php/ `lsb_release -cs` main" \
   > /etc/apt/sources.list.d/packages_sury_org_php.list \
     ;\
   apt-get -y update \
@@ -40,19 +38,19 @@ RUN \
     php7.1-fpm \
     php7.1-bcmath \
     php7.1-curl \
+    php7.1-gearman \
     php7.1-gd \
     php7.1-mbstring \
     php7.1-mcrypt \
+    php7.1-mongodb \
     php7.1-mysql \
     php7.1-intl \
     php7.1-sqlite3 \
     php7.1-soap \
+    php7.1-ssh2 \
+    php7.1-xdebug \
     php7.1-xml \
     php7.1-zip \
-    php-gearman \
-    php-mongodb \
-    php-ssh2 \
-    php-xdebug \
     ;
 
 RUN \
@@ -62,9 +60,10 @@ RUN \
     ;\
   apt-get -y install \
     git \
+    mercurial \
     libdbi-perl \
     libdbd-mysql-perl \
-    mysql-client-5.5 \
+    mariadb-client-10.1 \
     unzip \
     ;
 

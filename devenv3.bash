@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-DEVENV3_VERSION="0.3"
+DEVENV3_VERSION="0.4"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
 DEVENV3_APP_DIR="${HOME}/www"
@@ -12,6 +12,10 @@ DEVENV3_ALIASES=("de3" "denv3" "devenv3")
 DEVENV3_ALIAS="${_devenv3_alias:-${DEVENV3_FILENAME}}"
 
 BASHRC_PATH="${HOME}/.bashrc"
+ZSHRC_PATH="${HOME}/.zshrc"
+
+# Disable file name generation (globbing)
+set -f
 
 function _print {
   local print_type="${1}"
@@ -128,7 +132,7 @@ function command_build {
 
   progress "Starting 'docker-compose build' command"
   run_inside_de3 \
-    docker-compose build
+    docker-compose build "${@}"
   progress "Done"
 }
 
@@ -172,13 +176,14 @@ function command_help {
 
 function command_init {
   if [[ "${1}" == "description" ]]; then
-    echo "Append DevEnv3 aliases to .bashrc and other initializations"
+    echo "Append DevEnv3 aliases to .bashrc, .zshrc and other initializations"
     return 0
   fi
 
   local begin_string="### DevEnv3 aliases BEGIN ###"
   local end_string="### DevEnv3 aliases END ###"
   local devenv3_env_filepath="${DEVENV3_HOME_DIR}/.env"
+  local rc_path
 
   progress "Creating Applications directory"
   run mkdir --parents \
@@ -188,25 +193,36 @@ function command_init {
   {
     echo "USER_ID=`id --user`"
     echo "GROUP_ID=`id --group`"
-  } > "${devenv3_env_filepath}"
+  } > "${devenv3_env_filepath}" \
+    || error "Failed to write file"
 
-  progress "Appending DevEnv3 aliases to '${BASHRC_PATH}'"
-  run sed --in-place \
-    "/${begin_string}/,/${end_string}/d" \
-    "${BASHRC_PATH}"
-  {
-    echo "${begin_string}"
-    local devenv3_alias
-    for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
-      echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /bin/bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
-    done
-    echo "${end_string}"
-  } >> "${BASHRC_PATH}"
+  for rc_path in "${BASHRC_PATH}" "${ZSHRC_PATH}"; do
+    if [ -f "${rc_path}" ]; then
+      progress "Appending DevEnv3 aliases to '${rc_path}'"
+      run sed --in-place \
+        "/${begin_string}/,/${end_string}/d" \
+        "${rc_path}"
+    elif [ ! -h "${rc_path}" -a ! -e "${rc_path}" ]; then
+      progress "Writing DevEnv3 aliases to '${rc_path}'"
+    else
+      error "Failed to write '${rc_path}' because it's not a regular file"
+    fi
+    {
+      echo "${begin_string}"
+      local devenv3_alias
+      for devenv3_alias in ${DEVENV3_ALIASES[@]}; do
+        echo "alias ${devenv3_alias}=\"_devenv3_alias=${devenv3_alias} /usr/bin/env bash \\\"${DEVENV3_HOME_DIR}/${DEVENV3_FILENAME}\\\"\""
+      done
+      echo "${end_string}"
+    } >> "${rc_path}" \
+      || error "Failed to write file"
+  done
 
   progress "Done"
 
-  warning "To work of DevEnv3 aliases properly the '.bashrc' file need to be re-read" \
-          "Please run another copy of terminal OR run this command: source ${BASHRC_PATH}"
+  warning "To work of DevEnv3 aliases properly the another copy of terminal to be run" \
+          "OR run this command in BASH: source ${BASHRC_PATH}" \
+          "                    in  ZSH: source ${ZSHRC_PATH}"
 }
 
 function command_ls {
@@ -217,10 +233,12 @@ function command_ls {
 
   local print_format="%-20s %-40s %-2s %-20s %-20s %-12s %-10s\n"
   printf "${print_format}" \
-    "NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
+    "APP NAME" "URL" "TP" "HOME" "INDEX FILE" "PHP" "BRANCH"
 
-  local app_{branch,dir,home,index_file,name,php_version,type,url}
+  local app_{branch,branch_temp,dir,home,index_file,name,php_version,type,url}
   local index_{dir,file}
+
+  set +f
   for app_dir in "${DEVENV3_APP_DIR}/"*; do
     if [[    ! -d "${app_dir}" \
           && ! -h "${app_dir}" ]]; then
@@ -229,27 +247,30 @@ function command_ls {
 
     app_name="${app_dir##*/}"
 
-    case "${app_name}" in
-      "catchall" )
-        app_url="http://*.${DEVENV3_APP_DOMAIN}/"
-        ;;
-      "default" )
-        app_url="http://${DEVENV3_APP_DOMAIN}/"
-        ;;
-      * )
-        app_url="http://${app_name}.${DEVENV3_APP_DOMAIN}/"
-        ;;
-    esac
+    if [[ ! "${app_name}" =~ ^[[:alnum:]_-]+$ ]]; then
+      app_url="(WRONG NAME)"
+    else
+      case "${app_name}" in
+        "catchall" )
+          app_url="http://*.${DEVENV3_APP_DOMAIN}/"
+          ;;
+       "default" )
+          app_url="http://${DEVENV3_APP_DOMAIN}/"
+          ;;
+        * )
+          app_url="http://${app_name}.${DEVENV3_APP_DOMAIN}/"
+          ;;
+      esac
+    fi
 
     app_home=$(
       run realpath \
         --relative-base="${DEVENV3_APP_DIR}" \
         "${app_dir}"
     )
-
     app_branch="-"
     app_index_file="-"
-    app_type=""
+    app_type="->"
     app_php_version="-"
 
     # Don't process application if realdir begin with / that is OUTSIDE applications directory
@@ -261,8 +282,6 @@ function command_ls {
     else
       if [[ "${app_name}" == "${app_home}" ]]; then
         app_type="=="
-      else
-        app_type="->"
       fi
 
       # Overwrite a app_dir with real directory
@@ -298,9 +317,20 @@ function command_ls {
       index_dir="${app_dir}"
       # Walk to all upper directories when a searching of branch name like 'hg' command :)
       while [[ "${index_dir}" != "${DEVENV3_APP_DIR}" ]]; do
-        if [[ -s "${index_dir}/.hg/branch" ]]; then
-          read app_branch <"${index_dir}/.hg/branch"
-          break
+        if [[ -s "${index_dir}/.git/HEAD" ]]; then
+          read app_branch_temp <"${index_dir}/.git/HEAD"
+          # FIXME: realise the better branch name checker
+          if [[ "${app_branch_temp}" =~ ^ref:\ refs/heads/([[:alnum:]\._-]+)$ ]]; then
+             app_branch="git:${BASH_REMATCH[1]}"
+             break
+          fi
+        elif [[ -s "${index_dir}/.hg/branch" ]]; then
+          read app_branch_temp <"${index_dir}/.hg/branch"
+          # FIXME: realise the better branch name checker
+          if [[ "${app_branch_temp}" =~ ^[[:alnum:]\._-]+$ ]]; then
+            app_branch="hg:${app_branch_temp}"
+            break
+          fi
         fi
         index_dir="${index_dir%/*}"
       done
@@ -350,6 +380,8 @@ function command_rm {
       if [[ "${app_home::1}" != "/" ]]; then
         progress "Remove an alias '${app_name}' of '${app_home}' application"
         run rm "${app_dir}"
+      else
+        progress "Skipping a removing an alias '${app_name}' because it linked to outside of Applications directory"
       fi
 
     elif [ -d "${app_dir}" ]; then
@@ -390,7 +422,7 @@ function command_run_at {
   fi
 
   local app_path="${1}"
-  if [[ -z "${app_path}" ]]; then
+  if [[ -z "${app_path}" || "${app_path}" == "--help" ]]; then
     warning \
       "Please specify an application name where the command will run" \
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <command> [parameters]"
@@ -456,29 +488,44 @@ function command_set_at {
     return 0
   fi
 
-  local app_path="${1}"
-  if [[ -z "${app_path}" ]]; then
+  local app_name="${1}"
+  if [[ -z "${app_name}" || "${app_name}" == "--help" ]]; then
     warning \
       "Please specify an application name where set parameters" \
       "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>"
   fi
 
-  local app_name="${app_path%%/*}"
-  local app_dir="${DEVENV3_APP_DIR}/${app_name}"
-  if [[ ! -d "${app_dir}" ]]; then
+  local app_path="${DEVENV3_APP_DIR}/${app_name}"
+  if [[ ! -d "${app_path}" && ! -h "${app_path}" ]]; then
     error \
       "The specified '${app_name}' application is not exists, please check and try again" \
       "To view list of all installed applications please use the command:" \
       "$ de3 ls"
   fi
 
+  # ${app_home} is relative to ${DEVENV3_APP_DIR} directory
+  local app_home=$(
+    run \
+      realpath \
+        --relative-base="${DEVENV3_APP_DIR}" \
+        "${app_path}"
+  )
+  if [[ "${app_home::1}" == "/" ]]; then
+    error \
+      "The specified '${app_name}' application has a home which is placed outside Applications directory" \
+      "Please specify an another application name!" \
+      "To view list of all installed applications please use the command:" \
+      "$ de3 ls"
+  fi
+  local app_real_path="${DEVENV3_APP_DIR}/${app_home}"
+
   shift
   local parameter_name="${1}"
   local parameter_value="${2}"
   case "${parameter_name}" in
     "alias" | "Alias" | "ALIAS" )
-      if [[ ! "${parameter_value}" =~ ^[-a-zA-Z0-9]+$ ]]; then
-        error "Please specify a correct alias name with symbols 'a-z' and digits '0-9' only supported"
+      if [[ ! "${parameter_value}" =~ ^[[:alnum:]_-]+$ ]]; then
+        error "Please specify a correct alias name with symbols 'a-z', 'A-Z', '_', '-' and digits '0-9' only supported"
       fi
 
       local app_alias_path="${DEVENV3_APP_DIR}/${parameter_value}"
@@ -488,12 +535,7 @@ function command_set_at {
         error "The alias '${parameter_value}' is already exists, please specify an another name"
       fi
 
-      if [[ -h "${app_dir}" ]]; then
-        local app_home=$(
-          run realpath \
-            --relative-base="${DEVENV3_APP_DIR}" \
-            "${app_dir}"
-        )
+      if [[ "${app_name}" != "${app_home}" ]]; then
         progress "Create a symlink '${parameter_value}' -> '${app_path}' (which is alias to '${app_home}')"
       else
         progress "Create a symlink '${parameter_value}' -> '${app_path}'"
@@ -513,7 +555,7 @@ function command_set_at {
       local app_php_version
       local app_php_profile_file
       for app_php_version in "7.2" "7.1" "5.6"; do
-        app_php_profile_file="${app_dir}/.profile_php${app_php_version}"
+        app_php_profile_file="${app_real_path}/.profile_php${app_php_version}"
         if [[ -f "${app_php_profile_file}" ]]; then
           break
         fi
@@ -530,7 +572,7 @@ function command_set_at {
       fi
 
       if [[ "${parameter_value}" != "5.6" ]]; then
-        app_php_profile_file="${app_dir}/.profile_php${parameter_value}"
+        app_php_profile_file="${app_real_path}/.profile_php${parameter_value}"
         progress "Write the new '${app_php_profile_file}' empty file"
         run touch \
           "${app_php_profile_file}"
@@ -544,7 +586,7 @@ function command_set_at {
       fi
 
       local app_php_xdebug="off"
-      local app_php_xdebug_file="${app_dir}/.profile_xdebug"
+      local app_php_xdebug_file="${app_real_path}/.profile_xdebug"
       if [[ -f "${app_php_xdebug_file}" ]]; then
         app_php_xdebug="on"
       fi
@@ -611,7 +653,7 @@ main_footer
 
 command_name="${1:-help}"
 if ! declare -F "command_${command_name}" >/dev/null; then
-  command_name="help"
+  error "Command '${command_name}' is not exists, please run '${DEVENV3_ALIAS} help' or just '${DEVENV3_ALIAS}' command"
 fi
 
 shift
