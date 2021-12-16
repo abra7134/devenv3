@@ -48,6 +48,7 @@ RUN \
     php7.1-sqlite3 \
     php7.1-soap \
     php7.1-xml \
+    php7.1-zip \
     php-gearman \
     php-mongodb \
     php-ssh2 \

@@ -4,8 +4,26 @@ services:
   composer:
     build:
       context: composer
+    # This fixes a strange bug with:
+    # ERROR: for dnsmasq  Cannot start service dnsmasq: b'Address already in use'
+    depends_on:
+      - nginx
     volumes:
       - /usr/local/bin
+
+  dnsmasq:
+    build:
+      context: dnsmasq
+    cap_add:
+      - NET_ADMIN
+    command:
+      - --address=/localhost/172.31.31.3
+      - --local-service
+      - --log-queries
+      - --no-dhcp-interface=*
+    networks:
+      default:
+        ipv4_address: &dnsmasq-ipv4-address 172.31.31.2
 
   nginx:
     build:
@@ -14,7 +32,8 @@ services:
         - USER_ID
         - GROUP_ID
     networks:
-      - main
+      default:
+        ipv4_address: 172.31.31.3
     ports:
       - "80:80"
     volumes:
@@ -28,8 +47,13 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
+    dns:
+      - *dnsmasq-ipv4-address
     networks:
-      - main
+      - default
     volumes_from:
       - composer
       - nginx
@@ -40,8 +64,13 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
+    dns:
+      - *dnsmasq-ipv4-address
     networks:
-      - main
+      - default
     volumes_from:
       - composer
       - nginx
@@ -52,12 +81,22 @@ services:
       args:
         - USER_ID
         - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
+    dns:
+      - *dnsmasq-ipv4-address
     networks:
-      - main
+      - default
     volumes_from:
       - composer
       - nginx
 
 networks:
-  main:
+  default:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.31.31.0/24
+          gateway: 172.31.31.1
