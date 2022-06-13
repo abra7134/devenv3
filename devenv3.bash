@@ -289,7 +289,7 @@ function command_ls {
       # For a pretty printing
       app_home+="/"
 
-      for app_php_version in "7.2" "7.1" "5.6"; do
+      for app_php_version in "7.4" "7.2" "7.1" "5.6"; do
         if [[ -f "${app_dir}/.profile_php${app_php_version}" ]]; then
           break
         fi
@@ -447,7 +447,7 @@ function command_run_at {
   shift
 
   local app_php_version
-  for app_php_version in "7.2" "7.1" "5.6"; do
+  for app_php_version in "7.4" "7.2" "7.1" "5.6"; do
     if [[ -f "${app_dir}/.profile_php${app_php_version}" ]]; then
       break
     fi
@@ -548,13 +548,13 @@ function command_set_at {
       progress "Done"
       ;;
     "php" | "Php" | "PHP" )
-      if [[ ! "${parameter_value}" =~ ^(5\.6|7\.1|7\.2)$ ]]; then
-        error "Please specify a correct version of PHP-interpreter: '5.6', '7.1' or '7.2' only supported"
+      if [[ ! "${parameter_value}" =~ ^(5\.6|7\.1|7\.2|7\.4)$ ]]; then
+        error "Please specify a correct version of PHP-interpreter: '5.6', '7.1', '7.2' or '7.4' only supported"
       fi
 
       local app_php_version
       local app_php_profile_file
-      for app_php_version in "7.2" "7.1" "5.6"; do
+      for app_php_version in "7.4" "7.2" "7.1" "5.6"; do
         app_php_profile_file="${app_real_path}/.profile_php${app_php_version}"
         if [[ -f "${app_php_profile_file}" ]]; then
           break
@@ -618,9 +618,9 @@ function command_set_at {
         "Please specify a parameter and its value which will be set" \
         "Usage: ${DEVENV3_ALIAS} ${command_name} <application_name> <parameter_name> <parameter_value>" \
         "" \
-        "Parameters:  alias <alias_name>  Set an alias (alternavite name)" \
-        "             php (5.6|7.1|7.2)   Set a version of PHP-interpreter which will be used" \
-        "             xdebug (on|off)     Enable or disable usage XDebug extension with PHP"
+        "Parameters:  alias <alias_name>      Set an alias (alternavite name)" \
+        "             php (5.6|7.1|7.2|7.4)   Set a version of PHP-interpreter which will be used" \
+        "             xdebug (on|off)         Enable or disable usage XDebug extension with PHP"
       ;;
   esac
 

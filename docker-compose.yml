@@ -92,6 +92,23 @@ services:
       - composer
       - nginx
 
+  php-fpm-74:
+    build:
+      context: php-fpm-74
+      args:
+        - USER_ID
+        - GROUP_ID
+    # Needed for a PHP-tracing support
+    cap_add:
+      - SYS_PTRACE
+    dns:
+      - *dnsmasq-ipv4-address
+    networks:
+      - default
+    volumes_from:
+      - composer
+      - nginx
+
 networks:
   default:
     driver: bridge

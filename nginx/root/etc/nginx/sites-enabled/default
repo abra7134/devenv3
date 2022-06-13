@@ -66,6 +66,7 @@ server {
   if ( -f /www/$project/.profile_xdebug ) {
     set $php_xdebug "-xdebug";
   }
+
   set $php_sock "unix:/run/php/php5.6-fpm-www$php_xdebug.sock";
 
   if ( -f /www/$project/.profile_php7.1 ) {
@@ -75,6 +76,11 @@ server {
   if ( -f /www/$project/.profile_php7.2 ) {
     set $php_sock "unix:/run/php/php7.2-fpm-www$php_xdebug.sock";
   }
+
+  if ( -f /www/$project/.profile_php7.4 ) {
+    set $php_sock "unix:/run/php/php7.4-fpm-www$php_xdebug.sock";
+  }
+
   set $root /www/$project;
 
   if ( -d /www/$project/web ) {
