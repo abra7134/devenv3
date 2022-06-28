@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-DEVENV3_VERSION="0.4.1"
+DEVENV3_VERSION="0.4.2"
 DEVENV3_MAINTAINER_EMAIL="lekomtsev@unix-mastery.ru"
 
 DEVENV3_APP_DIR="${HOME}/www"
 DEVENV3_APP_DOMAIN="localhost"
 DEVENV3_HOME_DIR=$(dirname $(realpath "${0}"))
 DEVENV3_FILENAME=$(basename "${0}")
+DEVENV3_ENV_FILEPATH="${DEVENV3_HOME_DIR}/.env"
 
 DEVENV3_ALIASES=("de3" "denv3" "devenv3")
 DEVENV3_ALIAS="${_devenv3_alias:-${DEVENV3_FILENAME}}"
@@ -126,6 +127,12 @@ function command_build {
     return 0
   fi
 
+  if [ ! -s "${DEVENV3_ENV_FILEPATH}" ]; then
+    warning \
+      "Correct images building requires an '.env' file at DevEnv3 home directory" \
+      "Please run '${DEVENV3_ALIAS} build' command at first for correct writing this file"
+  fi
+
   info \
     "This command run a building of Docker images used in this environment" \
     "It can take some time"
@@ -182,18 +189,17 @@ function command_init {
 
   local begin_string="### DevEnv3 aliases BEGIN ###"
   local end_string="### DevEnv3 aliases END ###"
-  local devenv3_env_filepath="${DEVENV3_HOME_DIR}/.env"
   local rc_path
 
   progress "Creating Applications directory"
   run mkdir --parents \
     "${DEVENV3_APP_DIR}"
 
-  progress "Writing '${devenv3_env_filepath}' file"
+  progress "Writing '${DEVENV3_ENV_FILEPATH}' file"
   {
     echo "USER_ID=`id --user`"
     echo "GROUP_ID=`id --group`"
-  } > "${devenv3_env_filepath}" \
+  } > "${DEVENV3_ENV_FILEPATH}" \
     || error "Failed to write file"
 
   for rc_path in "${BASHRC_PATH}" "${ZSHRC_PATH}"; do

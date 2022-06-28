@@ -59,6 +59,7 @@ RUN \
     ;\
   apt-get -y install \
     git \
+    imagemagick \
     mercurial \
     libdbi-perl \
     libdbd-mysql-perl \
