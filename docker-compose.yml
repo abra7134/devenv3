@@ -41,7 +41,7 @@ services:
       - /run/php
       - ~/www:/www
 
-  php-fpm-56:
+  php-fpm-56: &php-fpm-56
     build:
       context: php-fpm-56
       args:
@@ -52,62 +52,24 @@ services:
       - SYS_PTRACE
     dns:
       - *dnsmasq-ipv4-address
-    networks:
-      - default
     volumes_from:
       - composer
       - nginx
 
   php-fpm-71:
+    <<: *php-fpm-56
     build:
       context: php-fpm-71
-      args:
-        - USER_ID
-        - GROUP_ID
-    # Needed for a PHP-tracing support
-    cap_add:
-      - SYS_PTRACE
-    dns:
-      - *dnsmasq-ipv4-address
-    networks:
-      - default
-    volumes_from:
-      - composer
-      - nginx
 
   php-fpm-72:
+    <<: *php-fpm-56
     build:
       context: php-fpm-72
-      args:
-        - USER_ID
-        - GROUP_ID
-    # Needed for a PHP-tracing support
-    cap_add:
-      - SYS_PTRACE
-    dns:
-      - *dnsmasq-ipv4-address
-    networks:
-      - default
-    volumes_from:
-      - composer
-      - nginx
 
   php-fpm-74:
+    <<: *php-fpm-56
     build:
       context: php-fpm-74
-      args:
-        - USER_ID
-        - GROUP_ID
-    # Needed for a PHP-tracing support
-    cap_add:
-      - SYS_PTRACE
-    dns:
-      - *dnsmasq-ipv4-address
-    networks:
-      - default
-    volumes_from:
-      - composer
-      - nginx
 
 networks:
   default:
