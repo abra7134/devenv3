@@ -1,4 +1,4 @@
-FROM debian:9.13
+FROM debian:10
 
 RUN \
   set -eux \

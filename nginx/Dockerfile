@@ -1,4 +1,4 @@
-FROM debian:9.13-slim
+FROM debian:9-slim
 
 RUN \
   set -eux \

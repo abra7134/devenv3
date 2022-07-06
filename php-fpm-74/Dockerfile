@@ -1,4 +1,4 @@
-FROM debian:9.13
+FROM debian:10
 
 RUN \
   set -eux \
@@ -63,7 +63,7 @@ RUN \
     mercurial \
     libdbi-perl \
     libdbd-mysql-perl \
-    mariadb-client-10.1 \
+    mariadb-client \
     unzip \
     ;
 
