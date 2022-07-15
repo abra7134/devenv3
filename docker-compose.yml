@@ -42,7 +42,7 @@ services:
       - ~/www:/www
 
   php-fpm-56: &php-fpm-56
-    build:
+    build: &php-fpm-56-build
       context: php-fpm-56
       args:
         - USER_ID
@@ -59,16 +59,19 @@ services:
   php-fpm-71:
     <<: *php-fpm-56
     build:
+      <<: *php-fpm-56-build
       context: php-fpm-71
 
   php-fpm-72:
     <<: *php-fpm-56
     build:
+      <<: *php-fpm-56-build
       context: php-fpm-72
 
   php-fpm-74:
     <<: *php-fpm-56
     build:
+      <<: *php-fpm-56-build
       context: php-fpm-74
 
 networks:
